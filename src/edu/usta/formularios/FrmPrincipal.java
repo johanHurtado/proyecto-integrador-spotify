@@ -4,6 +4,8 @@
  */
 package edu.usta.formularios;
 
+import javax.swing.JFrame;
+
 /**
  *
  * @author johan
@@ -15,6 +17,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
      */
     public FrmPrincipal() {
         initComponents();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     /**
