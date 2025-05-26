@@ -1,5 +1,44 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+
+class RoundedPanel extends JPanel {
+    private int cornerRadius;
+
+    public RoundedPanel(int radius) {
+        this.cornerRadius = radius;
+        setOpaque(false);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
+        g2.dispose();
+    }
+}
+
+class RoundButton extends JButton {
+    public RoundButton(Color color) {
+        setPreferredSize(new Dimension(14, 14));
+        setContentAreaFilled(false);
+        setFocusPainted(false);
+        setBorderPainted(false);
+        setBackground(color);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fill(new Ellipse2D.Double(0, 0, getWidth(), getHeight()));
+        g2.dispose();
+    }
+}
 
 public class SpotifyCloneUI extends JFrame {
 
@@ -9,121 +48,179 @@ public class SpotifyCloneUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+        setUndecorated(true);
 
-        // Colores base estilo Spotify
-        Color background = new Color(18, 18, 18);
-        Color panelColor = new Color(24, 24, 24);
+        Color background = new Color(25, 25, 25);
+        Color panelColor = new Color(35, 35, 35);
         Color textColor = Color.WHITE;
-        Color accentGreen = new Color(30, 215, 96);
 
         getContentPane().setBackground(background);
 
-        // PANEL IZQUIERDO: Biblioteca
-        JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.setBackground(panelColor);
-        leftPanel.setPreferredSize(new Dimension(220, getHeight()));
+        // --- TÍTULO: Botones estilo Mac ---
+        RoundedPanel titleBar = new RoundedPanel(20);
+        titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 6, 7));
+        titleBar.setBackground(panelColor);
+        titleBar.setPreferredSize(new Dimension(1280, 30));
 
-        JLabel libraryTitle = new JLabel("Tu biblioteca");
-        libraryTitle.setForeground(textColor);
-        libraryTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
-        libraryTitle.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        JButton createBtn = new JButton("+ Crear");
-        createBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        RoundButton closeBtn = new RoundButton(new Color(255, 95, 86));
+        closeBtn.addActionListener(e -> System.exit(0));
 
-        JPanel libraryHeader = new JPanel();
-        libraryHeader.setLayout(new BorderLayout());
-        libraryHeader.setBackground(panelColor);
-        libraryHeader.add(libraryTitle, BorderLayout.WEST);
-        libraryHeader.add(createBtn, BorderLayout.EAST);
+        RoundButton minBtn = new RoundButton(new Color(255, 189, 46));
+        minBtn.addActionListener(e -> setState(Frame.ICONIFIED));
 
-        JPanel listPanel = new JPanel();
-        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-        listPanel.setBackground(panelColor);
+        RoundButton maxBtn = new RoundButton(new Color(39, 201, 63));
+        maxBtn.addActionListener(e -> {
+            if (getExtendedState() == Frame.MAXIMIZED_BOTH) {
+                setExtendedState(Frame.NORMAL);
+            } else {
+                setExtendedState(Frame.MAXIMIZED_BOTH);
+            }
+        });
 
-        String[] items = {
-                "Tus me gusta", "Blessd", "Anuel AA", "Ovy On The Drums",
-                "GYM - TEMAZOS MOTIVACION 2025", "BlessDeluxury", "SI SABE",
-                "Your Top Songs 2023", "Saber Amar"
-        };
+        titleBar.add(closeBtn);
+        titleBar.add(minBtn);
+        titleBar.add(maxBtn);
 
-        for (String item : items) {
-            JLabel label = new JLabel(item);
-            label.setForeground(textColor);
-            label.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
-            listPanel.add(label);
+        // --- BARRA DE NAVEGACIÓN SECUNDARIA (basada en imagen) ---
+        // --- BARRA DE NAVEGACIÓN CENTRADA Y REDONDEADA ---
+        RoundedPanel menuBarContainer = new RoundedPanel(40);
+        menuBarContainer.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        menuBarContainer.setBackground(new Color(25, 25, 25));
+        menuBarContainer.setPreferredSize(new Dimension(1200, 60)); // altura total del contenedor
+
+        RoundedPanel menuBar = new RoundedPanel(40);
+        menuBar.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        menuBar.setBackground(new Color(30, 30, 30));
+        menuBar.setPreferredSize(new Dimension(800, 40)); // ancho reducido y centrado visualmente
+        menuBar.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+
+        String[] items = { "For You", "Browse", "Videos", "Radio", "Library", "Now Playing" };
+        ButtonGroup navGroup = new ButtonGroup();
+Color defaultBg = new Color(30, 30, 30);
+Color selectedBg = new Color(90, 90, 90);
+Color hoverBg = new Color(60, 60, 60);
+
+for (String item : items) {
+    JToggleButton button = new JToggleButton(item) {
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(getModel().isSelected() ? selectedBg : getBackground());
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    };
+
+    button.setFocusPainted(false);
+    button.setForeground(Color.WHITE);
+    button.setFont(new Font("SansSerif", Font.BOLD, 13));
+    button.setContentAreaFilled(false); // para evitar el fondo por defecto
+    button.setOpaque(false);            // fondo lo pintamos nosotros
+    button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    button.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 16));
+    button.setBackground(item.equals("For You") ? selectedBg : defaultBg);
+    button.setSelected(item.equals("For You"));
+
+    // Hover
+    button.addMouseListener(new java.awt.event.MouseAdapter() {
+        @Override
+        public void mouseEntered(java.awt.event.MouseEvent evt) {
+            if (!button.isSelected()) {
+                button.setBackground(hoverBg);
+            }
         }
 
-        JScrollPane scrollLeft = new JScrollPane(listPanel);
-        scrollLeft.setBorder(null);
-        scrollLeft.getViewport().setBackground(panelColor);
+        @Override
+        public void mouseExited(java.awt.event.MouseEvent evt) {
+            if (!button.isSelected()) {
+                button.setBackground(defaultBg);
+            }
+        }
+    });
 
-        leftPanel.add(libraryHeader);
-        leftPanel.add(scrollLeft);
+    // Cambio de estado dinámico
+    button.addActionListener(e -> {
+        for (Component comp : menuBar.getComponents()) {
+            if (comp instanceof JToggleButton) {
+                JToggleButton btn = (JToggleButton) comp;
+                btn.setBackground(btn.isSelected() ? selectedBg : defaultBg);
+            }
+        }
+    });
 
-        // PANEL CENTRAL: Recomendado / Lanzamientos
+    navGroup.add(button);
+    menuBar.add(button);
+}
+
+        
+        JButton searchBtn = new JButton("🔍");
+        JButton settingsBtn = new JButton("⚙");
+        for (JButton iconBtn : new JButton[] { searchBtn, settingsBtn }) {
+            iconBtn.setFocusPainted(false);
+            iconBtn.setBackground(new Color(30, 30, 30));
+            iconBtn.setForeground(Color.WHITE);
+            iconBtn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+            menuBar.add(iconBtn);
+        }
+
+        menuBarContainer.add(menuBar);
+
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BorderLayout());
+        topPanel.setBackground(panelColor);
+        topPanel.add(titleBar, BorderLayout.NORTH);
+        topPanel.add(menuBarContainer, BorderLayout.SOUTH);
+
+        
+
+        // --- PANEL CENTRAL: Álbumes ---
         JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(background);
+        centerPanel.setLayout(new GridLayout(2, 2, 20, 20));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel featured = new JLabel("Best of Morat", JLabel.CENTER);
-        featured.setForeground(textColor);
-        featured.setFont(new Font("SansSerif", Font.BOLD, 24));
-        featured.setAlignmentX(Component.CENTER_ALIGNMENT);
+        for (int i = 0; i < 4; i++) {
+            JPanel mixPanel = new JPanel();
+            mixPanel.setBackground(panelColor);
+            mixPanel.setLayout(new BorderLayout());
+            mixPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JButton playBtn = new JButton("Reproducir");
-        playBtn.setBackground(accentGreen);
-        playBtn.setForeground(Color.BLACK);
-        playBtn.setFocusPainted(false);
+            JLabel title = new JLabel("Mix " + (i + 1));
+            title.setForeground(textColor);
+            title.setFont(new Font("SansSerif", Font.BOLD, 16));
 
-        JButton followBtn = new JButton("Seguir");
+            JLabel subtitle = new JLabel("Updated Today");
+            subtitle.setForeground(Color.GRAY);
+            subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
-        JPanel btnPanel = new JPanel();
-        btnPanel.setBackground(background);
-        btnPanel.add(playBtn);
-        btnPanel.add(followBtn);
+            JPanel header = new JPanel();
+            header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+            header.setBackground(panelColor);
+            header.add(title);
+            header.add(subtitle);
 
-        centerPanel.add(Box.createVerticalStrut(30));
-        centerPanel.add(featured);
-        centerPanel.add(Box.createVerticalStrut(15));
-        centerPanel.add(btnPanel);
+            JPanel coverPanel = new JPanel();
+            coverPanel.setLayout(new GridLayout(2, 2, 5, 5));
+            coverPanel.setBackground(panelColor);
 
-        // PANEL DERECHO: Info del álbum
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setBackground(panelColor);
-        rightPanel.setPreferredSize(new Dimension(300, getHeight()));
+            for (int j = 0; j < 4; j++) {
+                JLabel cover = new JLabel();
+                cover.setOpaque(true);
+                cover.setBackground(Color.DARK_GRAY);
+                cover.setPreferredSize(new Dimension(100, 100));
+                cover.setIcon(new ImageIcon("img/cover.png"));
+                coverPanel.add(cover);
+            }
 
-        JLabel nowPlaying = new JLabel("Saber Amar", JLabel.CENTER);
-        nowPlaying.setForeground(textColor);
-        nowPlaying.setFont(new Font("SansSerif", Font.BOLD, 18));
-        nowPlaying.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            mixPanel.add(header, BorderLayout.NORTH);
+            mixPanel.add(coverPanel, BorderLayout.CENTER);
+            centerPanel.add(mixPanel);
+        }
 
-        JLabel artist = new JLabel("Penyair", JLabel.CENTER);
-        artist.setForeground(textColor);
-
-        rightPanel.add(nowPlaying);
-        rightPanel.add(artist);
-
-        // PANEL INFERIOR: Controles de reproducción
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(panelColor);
-        bottomPanel.setPreferredSize(new Dimension(getWidth(), 60));
-
-        JButton prevBtn = new JButton("⏮");
-        JButton playPauseBtn = new JButton("▶");
-        JButton nextBtn = new JButton("⏭");
-
-        bottomPanel.add(prevBtn);
-        bottomPanel.add(playPauseBtn);
-        bottomPanel.add(nextBtn);
-
-        // Añadir paneles al frame
-        add(leftPanel, BorderLayout.WEST);
+        add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
-        add(rightPanel, BorderLayout.EAST);
-        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     public static void mostrarInterfaz() {
