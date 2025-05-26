@@ -9,6 +9,7 @@ import java.io.IOException;
 public class FrameInicioSesion extends JFrame {
     private JLabel errorMessage;
     private Point initialClick;
+    // hola estebanano mi amor
 
     public FrameInicioSesion() {
         setUndecorated(true);
