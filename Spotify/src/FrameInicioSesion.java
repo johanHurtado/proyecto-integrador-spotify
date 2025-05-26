@@ -151,13 +151,16 @@ public class FrameInicioSesion extends JFrame {
             String pass = new String(passField.getPassword()).trim();
 
             if (user.equals("johanhurtado2006@gmail.com") && pass.equals("123456")) {
-                errorMessage.setVisible(false);
-                JOptionPane.showMessageDialog(this, "¡Bienvenido a Spotify!", "Inicio exitoso",
-                        JOptionPane.INFORMATION_MESSAGE);
+               errorMessage.setVisible(false);
+        dispose(); // Cierra la ventana de inicio de sesión
+        new SpotifyCloneUI().setVisible(true);
+            new SpotifyCloneUI();
             } else {
                 errorMessage.setVisible(true);
             }
         });
+
+        
 
         JLabel register = new JLabel("¿No tienes cuenta? ");
         register.setFont(new Font("Arial", Font.PLAIN, 13));
