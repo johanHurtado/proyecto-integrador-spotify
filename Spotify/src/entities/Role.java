@@ -2,6 +2,7 @@ public class Role {
     private Integer id;
     private String nameRol;
     private Integer levelRol;
+    
     public Role() {
     
     }
