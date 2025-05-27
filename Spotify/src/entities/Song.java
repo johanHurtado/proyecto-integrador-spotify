@@ -1,11 +1,11 @@
 public class Song {
     private Integer idSong;
     private String title;
-    private Integer timeLength;
+    private double timeLength;
     public Song() {
     
     }
-    public Song(Integer idSong, String title, Integer timeLength) {
+    public Song(Integer idSong, String title, double timeLength) {
         this.idSong = idSong;
         this.title = title;
         this.timeLength = timeLength;
@@ -22,10 +22,10 @@ public class Song {
     public void setTitle(String title) {
         this.title = title;
     }
-    public Integer getTimeLength() {
+    public double getTimeLength() {
         return timeLength;
     }
-    public void setTimeLength(Integer timeLength) {
+    public void setTimeLength(double timeLength) {
         this.timeLength = timeLength;
     }
     @Override
