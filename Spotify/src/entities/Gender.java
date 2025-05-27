@@ -1,12 +1,12 @@
-public class Genere {
+public class Gender {
     private Integer id;
     private String name;
     private String description;
 
-    public Genere() {
+    public Gender() {
     }
 
-    public Genere(Integer id, String name, String description) {
+    public Gender(Integer id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
