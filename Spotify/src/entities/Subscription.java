@@ -3,6 +3,7 @@ public class Subscription {
     private String subName;
     private String subBenefits;
     private String subDescription;
+    
     public Subscription() {
     
     }
