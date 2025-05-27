@@ -24,6 +24,7 @@ public class SpotifyPremiumPlansUI extends JFrame {
         JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 7));
         titleBar.setBackground(new Color(35, 35, 35));
         titleBar.setPreferredSize(new Dimension(800, 30));
+        titleBar.setAlignmentX(CENTER_ALIGNMENT);
 
         JButton closeBtn = createMacCircle(Color.RED);
         closeBtn.addActionListener(e -> System.exit(0));
@@ -60,12 +61,12 @@ public class SpotifyPremiumPlansUI extends JFrame {
         JLabel heading = new JLabel("Elige tu plan Premium");
         heading.setFont(new Font("Arial", Font.BOLD, 28));
         heading.setForeground(Color.WHITE);
-        heading.setAlignmentX(Component.CENTER_ALIGNMENT);
+        heading.setAlignmentX(CENTER_ALIGNMENT);
 
         JLabel subheading = new JLabel("Escucha música sin anuncios, descarga tus canciones favoritas y más.");
         subheading.setFont(new Font("Arial", Font.PLAIN, 16));
         subheading.setForeground(Color.LIGHT_GRAY);
-        subheading.setAlignmentX(Component.CENTER_ALIGNMENT);
+        subheading.setAlignmentX(CENTER_ALIGNMENT);
 
         mainPanel.add(heading);
         mainPanel.add(Box.createVerticalStrut(10));
@@ -231,8 +232,8 @@ public class SpotifyPremiumPlansUI extends JFrame {
         getPremiumButton.setForeground(Color.BLACK);
         getPremiumButton.setFocusPainted(false);
         getPremiumButton.setFont(new Font("Arial", Font.BOLD, 14));
+        getPremiumButton.setMaximumSize(new Dimension(200, 40));
         getPremiumButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        getPremiumButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         getPremiumButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         panel.add(getPremiumButton);
