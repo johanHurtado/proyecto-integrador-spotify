@@ -9,7 +9,6 @@ import java.io.IOException;
 public class FrameInicioSesion extends JFrame {
     private JLabel errorMessage;
     private Point initialClick;
-    // hola estebanano mi amor
 
     public FrameInicioSesion() {
         setUndecorated(true);
@@ -152,16 +151,14 @@ public class FrameInicioSesion extends JFrame {
             String pass = new String(passField.getPassword()).trim();
 
             if (user.equals("johanhurtado2006@gmail.com") && pass.equals("123456")) {
-               errorMessage.setVisible(false);
-        dispose(); // Cierra la ventana de inicio de sesión
-        new SpotifyCloneUI().setVisible(true);
-            new SpotifyCloneUI();
+                errorMessage.setVisible(false);
+                dispose(); // Cierra la ventana de inicio de sesión
+                new SpotifyCloneUI().setVisible(true);
+                new SpotifyCloneUI();
             } else {
                 errorMessage.setVisible(true);
             }
         });
-
-        
 
         JLabel register = new JLabel("¿No tienes cuenta? ");
         register.setFont(new Font("Arial", Font.PLAIN, 13));
