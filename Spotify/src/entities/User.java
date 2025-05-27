@@ -4,17 +4,21 @@ public class User {
     private String email;
     private String password;
     private Integer phoneNumber;
+    private Role role;
+    private Subscription subscription;
     
     public User() {
     
     }
 
-    public User(Integer id, String name, String email, String password, Integer phoneNumber) {
+    public User(Integer id, String name, String email, String password, Integer phoneNumber, Role role, Subscription subscription) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.phoneNumber = phoneNumber;
+        this.role = role;
+        this.subscription = subscription;
     }
 
     public Integer getId() {
@@ -57,11 +61,28 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Subscription getSubscription() {
+        return subscription;
+    }
+
+    public void setSubscription(Subscription subscription) {
+        this.subscription = subscription;
+    }
+
     @Override
     public String toString() {
         return "User [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", phoneNumber="
-                + phoneNumber + "]";
+                + phoneNumber + ", role=" + role + ", subscription=" + subscription + "]";
     }
+
     
     
 }

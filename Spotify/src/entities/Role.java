@@ -1,12 +1,12 @@
 public class Role {
     private Integer id;
     private String nameRol;
-    private Integer levelRol;
+    private boolean levelRol;
     
     public Role() {
     
     }
-    public Role(Integer id, String nameRol, Integer levelRol) {
+    public Role(Integer id, String nameRol, boolean levelRol) {
         this.id = id;
         this.nameRol = nameRol;
         this.levelRol = levelRol;
@@ -23,10 +23,10 @@ public class Role {
     public void setNameRol(String nameRol) {
         this.nameRol = nameRol;
     }
-    public Integer getLevelRol() {
+    public boolean getLevelRol() {
         return levelRol;
     }
-    public void setLevelRol(Integer levelRol) {
+    public void setLevelRol(boolean levelRol) {
         this.levelRol = levelRol;
     }
     @Override
