@@ -4,6 +4,7 @@ public class Gender {
     private String description;
 
     public Gender() {
+    
     }
 
     public Gender(Integer id, String name, String description) {
