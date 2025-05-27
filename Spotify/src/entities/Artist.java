@@ -4,6 +4,7 @@ public class Artist {
     private String description;
 
     public Artist() {
+    
     }
 
     public Artist(Integer id, String name, String description) {
