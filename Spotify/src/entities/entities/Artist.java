@@ -1,3 +1,4 @@
+package entities;
 public class Artist {
     private Integer id;
     private String name;

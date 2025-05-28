@@ -1,3 +1,4 @@
+package entities;
 public class Gender {
     private Integer idGender;
     private String nameGender;

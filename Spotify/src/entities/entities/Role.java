@@ -1,3 +1,4 @@
+package entities;
 public class Role {
     private Integer id;
     private String nameRol;

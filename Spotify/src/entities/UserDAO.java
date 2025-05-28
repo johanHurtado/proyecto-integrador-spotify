@@ -5,6 +5,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import Database.Conexion;
+import entities.Role;
+import entities.Subscription;
+import entities.User;
 
 public class UserDAO {
     // ! CRUD

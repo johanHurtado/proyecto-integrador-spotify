@@ -1,3 +1,4 @@
+package entities;
 public class Subscription {
     private Integer id;
     private String subName;
