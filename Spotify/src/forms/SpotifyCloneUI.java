@@ -246,12 +246,20 @@ public class SpotifyCloneUI extends JFrame {
             JPanel coverPanel = new JPanel(new GridLayout(2, 2, 5, 5));
             coverPanel.setBackground(panelColor);
 
-            for (int j = 0; j < 4; j++) {
+            String[] coverImages = {
+                    "/resources/cover1.png",
+                    "/resources/cover2.png",
+                    "/resources/cover3.png",
+                    "/resources/cover4.png"
+            };
+
+            for (int j = 0; j < coverImages.length; j++) {
                 JLabel cover = new JLabel();
                 cover.setOpaque(true);
                 cover.setBackground(Color.DARK_GRAY);
                 cover.setPreferredSize(new Dimension(100, 100));
-                ImageIcon icon = new ImageIcon(getClass().getResource("/resources/icono_spotify.png"));
+
+                ImageIcon icon = new ImageIcon(getClass().getResource(coverImages[j]));
                 Image scaled = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
                 cover.setIcon(new ImageIcon(scaled));
 
