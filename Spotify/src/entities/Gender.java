@@ -1,32 +1,32 @@
 public class Gender {
-    private Integer id;
-    private String name;
+    private Integer idGender;
+    private String nameGender;
     private String description;
 
     public Gender() {
     
     }
 
-    public Gender(Integer id, String name, String description) {
-        this.id = id;
-        this.name = name;
+    public Gender(Integer idGender, String nameGender, String description) {
+        this.idGender = idGender;
+        this.nameGender = nameGender;
         this.description = description;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getIdGender() {
+        return idGender;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setIdGender(Integer idGender) {
+        this.idGender = idGender;
     }
 
-    public String getName() {
-        return name;
+    public String getNameGender() {
+        return nameGender;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNameGender(String nameGender) {
+        this.nameGender = nameGender;
     }
 
     public String getDescription() {
@@ -39,8 +39,9 @@ public class Gender {
 
     @Override
     public String toString() {
-        return "Genere [id=" + id + ", name=" + name + ", description=" + description + "]";
+        return "Gender [idGender=" + idGender + ", nameGender=" + nameGender + ", description=" + description + "]";
     }
+
     
 
 }
