@@ -195,19 +195,16 @@ public class SpotifyCloneUI extends JFrame {
             buttonGroupPanel.add(button);
         }
 
-        centerWrapper.add(buttonGroupPanel);
-
-        // Botones a la derecha
-        IconButton searchBtn = new IconButton("🔍");
-        IconButton settingsBtn = new IconButton("⚙");
-
-        JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        iconPanel.setOpaque(false);
-        iconPanel.add(searchBtn);
-        iconPanel.add(settingsBtn);
-
-        menuBarContainer.add(centerWrapper, BorderLayout.CENTER);
-        menuBarContainer.add(iconPanel, BorderLayout.EAST);
+        
+        JButton searchBtn = new JButton("🔍");
+        JButton settingsBtn = new JButton("⚙");
+        for (JButton iconBtn : new JButton[] { searchBtn, settingsBtn }) {
+            iconBtn.setFocusPainted(false);
+            iconBtn.setBackground(new Color(30, 30, 30));
+            iconBtn.setForeground(Color.WHITE);
+            iconBtn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+            menuBar.add(iconBtn);
+        }
 
         // TopPanel
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -221,11 +218,9 @@ public class SpotifyCloneUI extends JFrame {
         centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         for (int i = 0; i < 4; i++) {
-            RoundedPanel mixPanel = new RoundedPanel(30); // 30 = radio de redondeo
-            mixPanel.setLayout(new BorderLayout());
-            mixPanel.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 60), 1));
-
+            JPanel mixPanel = new JPanel();
             mixPanel.setBackground(panelColor);
+            mixPanel.setLayout(new BorderLayout());
             mixPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
             JLabel title = new JLabel("Mix " + (i + 1));
@@ -241,9 +236,9 @@ public class SpotifyCloneUI extends JFrame {
             header.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Espaciado interno
             header.add(title);
             header.add(subtitle);
-            
 
-            JPanel coverPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+            JPanel coverPanel = new JPanel();
+            coverPanel.setLayout(new GridLayout(2, 2, 5, 5));
             coverPanel.setBackground(panelColor);
 
             for (int j = 0; j < 4; j++) {
