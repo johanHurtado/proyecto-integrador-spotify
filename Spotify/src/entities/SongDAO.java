@@ -19,10 +19,7 @@ public class SongDAO {
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                Song song = new Song(rs.getInt("idcancion"), rs.getString("titulo"), rs.getString("descripcion"),
-                        rs.getDouble("duracion"),
-                        new Artist(rs.getInt("idartista"), rs.getString("nombre_artista"), ""),
-                        new Gender(rs.getInt("idgenero"), rs.getString("nombre_genero"), ""));
+                Song song = new Song();
                 songs.add(song);
             }
 
@@ -104,10 +101,7 @@ public class SongDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                song = new Song(rs.getInt("id_cancion"), rs.getString("titulo"),
-                        rs.getString("descripcion"), rs.getDouble("duracion"),
-                        new Artist(rs.getInt("id_artista"), rs.getString("nombre_artista"), ""),
-                        new Gender(rs.getInt("id_genero"), rs.getString("nombre_genero"), ""));
+                song = new Song();
             }
         } catch (Exception e) {
             System.out.println("No se pudo obtener la canción: " + e.getMessage());

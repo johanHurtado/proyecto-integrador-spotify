@@ -199,7 +199,7 @@ public class SpotifyCloneUI extends JFrame {
 
         // Botones a la derecha
         IconButton searchBtn = new IconButton("🔍");
-        IconButton settingsBtn = new IconButton("⚙️");
+        IconButton settingsBtn = new IconButton("⚙");
 
         JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         iconPanel.setOpaque(false);
@@ -241,6 +241,7 @@ public class SpotifyCloneUI extends JFrame {
             header.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Espaciado interno
             header.add(title);
             header.add(subtitle);
+            
 
             JPanel coverPanel = new JPanel(new GridLayout(2, 2, 5, 5));
             coverPanel.setBackground(panelColor);
