@@ -7,6 +7,9 @@ import java.util.List;
 import Database.Conexion;
 
 public class ArtistDAO {
+    // ! CRUD
+
+    //metodo para crear un artista
     public boolean addArtist(Artist artist){
         String sql = "INSERT INTO artist (nombre_artista, descripcion_artista) VALUES (?,?,?)";
         try {
@@ -21,6 +24,8 @@ public class ArtistDAO {
             return false;
         }
     }
+
+    //metodo para obtener todos los artistas
     public List<Artist> getAllArtists(){
         List<Artist> artists = new ArrayList<>();
         String sql = "SELECT * FROM artistas";
@@ -37,6 +42,8 @@ public class ArtistDAO {
         }
         return artists;
     }
+
+    //metodo para actualizar un artista
     public boolean updateArtist(Artist artist){
         String sql = "UPDATE artist SET nombre_artista = ?, descripcion_artista = ? WHERE idArtista = ?";
         try {
@@ -52,6 +59,8 @@ public class ArtistDAO {
             return false;
         }
     }
+
+    //metodo para eliminar un artista
     public boolean deletArtistbyID(Artist artist){
         String sql = "DELETE FROM artist WHERE idArtista = ?";
         try {
@@ -64,6 +73,8 @@ public class ArtistDAO {
         }
         return false;
     }
+
+    //metodo para obtener un artista por id
     public Artist geArtistByID(int idArtist){
         Artist artist = null;
         String sql = "SELECT * FROM artistas WHERE idArtista = ?";
