@@ -1,5 +1,5 @@
 public class MethodPayment {
-    private Integer id;
+    private Integer idMethodPayment;
     private String type;
     private String details;
     private Subscription subscription;
@@ -7,19 +7,19 @@ public class MethodPayment {
     public MethodPayment() {
     }
 
-    public MethodPayment(Integer id, String type, String details, Subscription subscription) {
-        this.id = id;
+    public MethodPayment(Integer idMethodPayment, String type, String details, Subscription subscription) {
+        this.idMethodPayment = idMethodPayment;
         this.type = type;
         this.details = details;
         this.subscription = subscription;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getIdMethodPayment() {
+        return idMethodPayment;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setIdMethodPayment(Integer idMethodPayment) {
+        this.idMethodPayment = idMethodPayment;
     }
 
     public String getType() {
@@ -48,7 +48,8 @@ public class MethodPayment {
 
     @Override
     public String toString() {
-        return "MethodPayment [id=" + id + ", type=" + type + ", details=" + details + ", subscription=" + subscription
-                + "]";
+        return "MethodPayment [idMethodPayment=" + idMethodPayment + ", type=" + type + ", details=" + details
+                + ", subscription=" + subscription + "]";
     }
+
 }
