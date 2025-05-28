@@ -1,4 +1,5 @@
 package forms;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -198,7 +199,7 @@ public class SpotifyCloneUI extends JFrame {
 
         // Botones a la derecha
         IconButton searchBtn = new IconButton("🔍");
-        IconButton settingsBtn = new IconButton("⚙️");
+        IconButton settingsBtn = new IconButton("⚙");
 
         JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         iconPanel.setOpaque(false);
@@ -220,7 +221,10 @@ public class SpotifyCloneUI extends JFrame {
         centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         for (int i = 0; i < 4; i++) {
-            JPanel mixPanel = new JPanel(new BorderLayout());
+            RoundedPanel mixPanel = new RoundedPanel(30); // 30 = radio de redondeo
+            mixPanel.setLayout(new BorderLayout());
+            mixPanel.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 60), 1));
+
             mixPanel.setBackground(panelColor);
             mixPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -231,12 +235,13 @@ public class SpotifyCloneUI extends JFrame {
             JLabel subtitle = new JLabel("Updated Today");
             subtitle.setForeground(Color.GRAY);
             subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
-
-            JPanel header = new JPanel();
+            RoundedPanel header = new RoundedPanel(20); // Radio menor para este header
             header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-            header.setBackground(panelColor);
+            header.setBackground(new Color(40, 40, 40)); // Ligeramente más claro para destacar
+            header.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Espaciado interno
             header.add(title);
             header.add(subtitle);
+            
 
             JPanel coverPanel = new JPanel(new GridLayout(2, 2, 5, 5));
             coverPanel.setBackground(panelColor);
