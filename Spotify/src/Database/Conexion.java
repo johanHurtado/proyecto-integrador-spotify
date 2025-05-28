@@ -12,12 +12,14 @@ public class Conexion {
     public static Connection getConnection() {
         Connection connection = null;
         try {
+            Class.forName("com.mysql.cj.jdbc.Driver"); // <-- ¡Esto carga el driver!
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
             System.out.println("Conexión exitosa a la base de datos");
+        } catch (ClassNotFoundException e) {
+            System.err.println("No se encontró el driver JDBC: " + e.getMessage());
         } catch (SQLException e) {
             System.err.println("Error al conectar a la base de datos: " + e.getMessage());
         }
         return connection;
     }
-
 }
