@@ -33,27 +33,50 @@ public class SongDAO {
 
     // Metodo para obtener todas las canciones
     public List<Song> getAllSongs() {
-        List<Song> songs = new ArrayList<>();
-        String sql = "SELECT * FROM canciones";
-        try {
-            Connection conn = Conexion.getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
+         List<Song> songs = new ArrayList<>();
+    
+    String sql = "SELECT c.id_cancion, c.titulo, c.descripcion, c.duracion, c.portada, " +
+                 "a.id_artista, a.nombre AS nombre_artista, " +
+                 "g.id_genero, g.nombre_genero " +
+                 "FROM canciones c " +
+                 "JOIN artistas a ON c.id_artista = a.id_artista " +
+                 "JOIN generos g ON c.id_genero = g.id_genero";
 
-            while (rs.next()) {
-                Song song = new Song();
-                songs.add(song);
-            }
+    try (Connection conn = Conexion.getConnection();
+         Statement stmt = conn.createStatement();
+         ResultSet rs = stmt.executeQuery(sql)) {
 
-        } catch (Exception e) {
-            System.out.println("No se pudo obtener las canciones: " + e.getMessage());
+        while (rs.next()) {
+            // Crear artista
+            Artist artist = new Artist(rs.getInt("id_artista"), rs.getString("nombre_artista"), rs.getString("Descripcion"));
+
+            // Crear género
+            Gender gender = new Gender(rs.getInt("id_genero"), rs.getString("nombre_genero"), rs.getString("Descripcion"));
+
+            // Crear canción
+            Song song = new Song(
+                rs.getInt("id_cancion"),
+                rs.getString("titulo"),
+                rs.getString("descripcion"),
+                rs.getDouble("duracion"),
+                artist,
+                gender,
+                rs.getBytes("portada")
+            );
+
+            songs.add(song);
         }
-        return songs;
+
+    } catch (Exception e) {
+        System.out.println("No se pudieron obtener las canciones: " + e.getMessage());
+    }
+
+    return songs;
     }
 
     // Metodo para agregar una canción
     public boolean addSong(Song song) {
-        String sql = "INSERT INTO canciones (titulo, descripcion, duracion, idartista, idgenero) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO canciones (titulo, descripcion, duracion, idartista, idgenero, portada) VALUES (?, ?, ?, ?, ?, ?)";
 
         try {
             Connection conn = Conexion.getConnection();
@@ -63,6 +86,7 @@ public class SongDAO {
             ps.setDouble(3, song.getTimeLength());
             ps.setInt(4, song.getArtist().getId());
             ps.setInt(5, song.getGender().getIdGender());
+            ps.setBytes(6, song.getCoverImage());
             ps.executeUpdate();
             return true;
 
@@ -74,7 +98,7 @@ public class SongDAO {
 
     // Metodo para actualizar una canción
     public boolean updateSong(Song song) {
-        String sql = "UPDATE canciones SET titulo = ?, descripcion = ?, duracion = ?, idartista = ?, idgenero = ? WHERE idcancion = ?";
+        String sql = "UPDATE canciones SET titulo = ?, descripcion = ?, duracion = ?, idartista = ?, idgenero = ?, portada = ? WHERE idcancion = ?";
 
         try {
             Connection conn = Conexion.getConnection();
@@ -85,6 +109,7 @@ public class SongDAO {
             ps.setInt(4, song.getArtist().getId());
             ps.setInt(5, song.getGender().getIdGender());
             ps.setInt(6, song.getIdSong());
+            ps.setBytes(7, song.getCoverImage());
             ps.executeUpdate();
             return true;
 
@@ -123,11 +148,33 @@ public class SongDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                song = new Song();
-            }
-        } catch (Exception e) {
-            System.out.println("No se pudo obtener la canción: " + e.getMessage());
+            // Crear artista
+            Artist artist = new Artist(
+                rs.getInt("id_artista"),
+                rs.getString("nombre_artista"), rs.getString("Descripcion")
+            );
+
+            // Crear género
+            Gender gender = new Gender(
+                rs.getInt("id_genero"),
+                rs.getString("nombre_genero"), rs.getString("Descripcion")
+            );
+
+            // Crear canción
+            song = new Song(
+                rs.getInt("id_cancion"),
+                rs.getString("titulo"),
+                rs.getString("descripcion"),
+                rs.getDouble("duracion"),
+                artist,
+                gender,
+                rs.getBytes("portada")
+            );
         }
+
+    } catch (Exception e) {
+        System.out.println("No se pudo obtener la canción: " + e.getMessage());
+    }
         return song;
     }
 }
