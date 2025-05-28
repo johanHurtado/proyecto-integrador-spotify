@@ -64,6 +64,9 @@ public class User {
     public Role getRole() {
         return role;
     }
+    public Integer getRoleId() {
+        return role.getId();
+    }
 
     public void setRole(Role role) {
         this.role = role;
@@ -71,6 +74,10 @@ public class User {
 
     public Subscription getSubscription() {
         return subscription;
+    }
+
+    public Integer getSubscriptionId(){
+        return subscription.getId();
     }
 
     public void setSubscription(Subscription subscription) {
