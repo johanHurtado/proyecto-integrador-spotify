@@ -33,7 +33,7 @@ public class UserDAO {
 
     // Metodo para agregar un usuario
     public boolean addUser(User user) {
-        String sql = "INSERT INTO usuario (nombre_usuario, correo, telefono, clave, idRol, idSuscripcion) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO usuarios (nombre_usuario, correo, telefono, clave, idRol, idSuscripcion) VALUES (?, ?, ?, ?, ?, ?)";
 
         try {
             Connection conn = Conexion.getConnection();
