@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 
 
@@ -90,67 +92,80 @@ class AdaptiveImagePanel extends JPanel {
     private Image image;
     private int cornerRadius;
     private Color backgroundColor;
-    
+
     public AdaptiveImagePanel(String imagePath, int cornerRadius) {
         this.cornerRadius = cornerRadius;
         this.backgroundColor = Color.DARK_GRAY;
         setOpaque(false);
         loadImage(imagePath);
     }
-    
+
     public AdaptiveImagePanel(String imagePath) {
         this(imagePath, 8); // Radio por defecto
     }
-    
+
     private void loadImage(String imagePath) {
         try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(imagePath));
-            this.image = icon.getImage();
+            // Intentar cargar desde recursos
+            java.net.URL imageURL = getClass().getResource(imagePath);
+            if (imageURL != null) {
+                ImageIcon icon = new ImageIcon(imageURL);
+                this.image = icon.getImage();
+            } else {
+                // Si no encuentra la imagen, intentar como archivo
+                ImageIcon icon = new ImageIcon(imagePath);
+                if (icon.getIconWidth() > 0) {
+                    this.image = icon.getImage();
+                } else {
+                    System.err.println("No se pudo cargar la imagen: " + imagePath);
+                    this.image = null;
+                }
+            }
         } catch (Exception e) {
-            System.err.println("No se pudo cargar la imagen: " + imagePath);
+            System.err.println("Error cargando imagen " + imagePath + ": " + e.getMessage());
             this.image = null;
         }
     }
-    
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g.create();
-        
+
         // Configurar antialiasing para mejor calidad
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        
+
         int width = getWidth();
         int height = getHeight();
-        
+
         if (width <= 0 || height <= 0) {
             g2d.dispose();
             return;
         }
-        
+
         // Crear una máscara con esquinas redondeadas
         Shape roundedRect = new java.awt.geom.RoundRectangle2D.Float(0, 0, width, height, cornerRadius, cornerRadius);
         g2d.setClip(roundedRect);
-        
+
         if (image != null) {
             // Calcular dimensiones para mantener proporción y llenar el área
             int imgWidth = image.getWidth(null);
             int imgHeight = image.getHeight(null);
-            
+
             if (imgWidth > 0 && imgHeight > 0) {
                 double scaleX = (double) width / imgWidth;
                 double scaleY = (double) height / imgHeight;
                 double scale = Math.max(scaleX, scaleY); // Usar el mayor para llenar completamente
-                
+
                 int scaledWidth = (int) (imgWidth * scale);
                 int scaledHeight = (int) (imgHeight * scale);
-                
+
                 // Centrar la imagen
                 int x = (width - scaledWidth) / 2;
                 int y = (height - scaledHeight) / 2;
-                
+
                 g2d.drawImage(image, x, y, scaledWidth, scaledHeight, this);
             }
         } else {
@@ -158,15 +173,15 @@ class AdaptiveImagePanel extends JPanel {
             g2d.setColor(backgroundColor);
             g2d.fillRoundRect(0, 0, width, height, cornerRadius, cornerRadius);
         }
-        
+
         g2d.dispose();
     }
-    
+
     public void setCornerRadius(int radius) {
         this.cornerRadius = radius;
         repaint();
     }
-    
+
     public void setBackgroundColor(Color color) {
         this.backgroundColor = color;
         repaint();
@@ -178,13 +193,13 @@ class ImageCoverPanel extends JPanel {
     private String placeholderText;
     private Color placeholderBg;
     private Font placeholderFont;
-    
+
     public ImageCoverPanel(String imagePath, String placeholder, Color bgColor) {
         setLayout(new BorderLayout());
         this.placeholderText = placeholder;
         this.placeholderBg = bgColor;
         this.placeholderFont = new Font("SansSerif", Font.BOLD, 24);
-        
+
         try {
             AdaptiveImagePanel imagePanel = new AdaptiveImagePanel(imagePath, 8);
             add(imagePanel, BorderLayout.CENTER);
@@ -193,7 +208,7 @@ class ImageCoverPanel extends JPanel {
             createPlaceholder();
         }
     }
-    
+
     private void createPlaceholder() {
         JLabel placeholder = new JLabel(placeholderText, SwingConstants.CENTER);
         placeholder.setOpaque(true);
@@ -204,7 +219,292 @@ class ImageCoverPanel extends JPanel {
     }
 }
 
+// Nueva clase para el layout dinámico de imágenes estilo Discovery Mix
+class DynamicMixLayout extends JPanel {
+    private String[] images;
+    private Color placeholderColor;
+    private String placeholderSymbol;
+    private boolean initialized = false;
+
+    public DynamicMixLayout(String[] images, Color placeholderColor, String placeholderSymbol) {
+        this.images = images;
+        this.placeholderColor = placeholderColor;
+        this.placeholderSymbol = placeholderSymbol;
+        setLayout(null);
+        setOpaque(false);
+    }
+
+    @Override
+    public void doLayout() {
+        super.doLayout();
+        if (!initialized || getWidth() > 0 && getHeight() > 0) {
+            createLayout();
+            initialized = true;
+        }
+    }
+
+    private void createLayout() {
+        removeAll();
+
+        int width = getWidth();
+        int height = getHeight();
+
+        if (width <= 0 || height <= 0)
+            return;
+
+        // Imagen principal (grande, lado izquierdo) - 60% del ancho
+        if (images.length > 0) {
+            int mainWidth = (int) (width * 0.6);
+            createImagePanel(0, 0, 0, mainWidth, height, 8);
+        }
+
+        // Panel derecho con imágenes más pequeñas
+        int rightX = (int) (width * 0.62);
+        int rightWidth = width - rightX;
+        int smallHeight = (int) (height * 0.48);
+        int gap = (int) (height * 0.04);
+
+        // Imagen superior derecha
+        if (images.length > 1) {
+            createImagePanel(1, rightX, 0, rightWidth, smallHeight, 6);
+        }
+
+        // Imagen inferior derecha
+        if (images.length > 2) {
+            createImagePanel(2, rightX, smallHeight + gap, rightWidth, smallHeight, 6);
+        }
+
+        // Imagen superpuesta (más pequeña, centrada en el lado derecho)
+        if (images.length > 3) {
+            int overlaySize = Math.min(rightWidth / 2, smallHeight / 2);
+            int overlayX = rightX + (rightWidth - overlaySize) / 2;
+            int overlayY = (height - overlaySize) / 2;
+            createImagePanel(3, overlayX, overlayY, overlaySize, overlaySize, 4);
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    private void createImagePanel(int index, int x, int y, int width, int height, int cornerRadius) {
+        ImageCoverPanel imagePanel = new ImageCoverPanel(
+                images[index],
+                placeholderSymbol,
+                placeholderColor);
+        imagePanel.setBounds(x, y, width, height);
+        add(imagePanel);
+    }
+}
+
+// Botón de Mix mejorado con layout dinámico
+class MixButton extends JPanel {
+    private Color defaultBg = new Color(35, 35, 35);
+    private Color hoverBg = new Color(45, 45, 45);
+    private Color pressedBg = new Color(55, 55, 55);
+    private boolean isHovered = false;
+    private boolean isPressed = false;
+    private int cornerRadius = 12;
+    private String mixName;
+    private String artistName;
+    private DynamicMixLayout mixLayout;
+
+    public MixButton(String mixName, String artistName, String[] coverImages, Color placeholderColor,
+            String placeholderSymbol) {
+        this.mixName = mixName;
+        this.artistName = artistName;
+
+        setLayout(new BorderLayout(0, 8));
+        setOpaque(false);
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+        // Layout dinámico para las imágenes
+        mixLayout = new DynamicMixLayout(coverImages, placeholderColor, placeholderSymbol);
+        mixLayout.setPreferredSize(new Dimension(280, 160));
+
+        // Forzar la inicialización del layout
+        SwingUtilities.invokeLater(() -> {
+            mixLayout.revalidate();
+            mixLayout.repaint();
+        });
+
+        // Panel de texto con gradiente de fondo
+        JPanel textPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Gradiente sutil
+                GradientPaint gradient = new GradientPaint(
+                        0, 0, new Color(40, 40, 40, 200),
+                        0, getHeight(), new Color(20, 20, 20, 220));
+                g2.setPaint(gradient);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                g2.dispose();
+            }
+        };
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setOpaque(false);
+        textPanel.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
+        // Título del mix
+        JLabel title = new JLabel(mixName);
+        title.setForeground(Color.WHITE);
+        title.setFont(new Font("SansSerif", Font.BOLD, 18));
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Subtítulo/artista
+        JLabel subtitle = new JLabel(artistName);
+        subtitle.setForeground(new Color(180, 180, 180));
+        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        textPanel.add(title);
+        textPanel.add(Box.createVerticalStrut(2));
+        textPanel.add(subtitle);
+
+        add(mixLayout, BorderLayout.CENTER);
+        add(textPanel, BorderLayout.SOUTH);
+
+        // Event listeners para interactividad
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                isHovered = true;
+                repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                isHovered = false;
+                isPressed = false;
+                repaint();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                isPressed = true;
+                repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                isPressed = false;
+                repaint();
+                onMixClicked();
+            }
+        });
+    }
+
+    private void onMixClicked() {
+        System.out.println("Mix seleccionado: " + mixName + " - " + artistName);
+        JOptionPane.showMessageDialog(this,
+                "Reproduciendo: " + mixName + "\nArtista: " + artistName,
+                "Mix Seleccionado",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Color bgColor = defaultBg;
+        if (isPressed) {
+            bgColor = pressedBg;
+        } else if (isHovered) {
+            bgColor = hoverBg;
+        }
+
+        g2.setColor(bgColor);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
+
+        // Efecto de brillo y sombra cuando está hover
+        if (isHovered && !isPressed) {
+            // Sombra suave
+            g2.setColor(new Color(0, 0, 0, 30));
+            g2.fillRoundRect(2, 2, getWidth(), getHeight(), cornerRadius, cornerRadius);
+
+            // Brillo sutil
+            g2.setColor(new Color(255, 255, 255, 8));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
+        }
+
+        g2.dispose();
+    }
+}
+
+// Clase para la flecha de navegación (AGREGAR ANTES DE LA CLASE SpotifyCloneUI)
+class NavigationArrow extends JButton {
+    private boolean isRight;
+    private Color arrowColor = new Color(200, 200, 200);
+    private Color hoverColor = Color.WHITE;
+    private Color bgColor = new Color(0, 0, 0, 100);
+    private Color hoverBgColor = new Color(0, 0, 0, 150);
+
+    public NavigationArrow(boolean isRight) {
+        this.isRight = isRight;
+        setPreferredSize(new Dimension(50, 50));
+        setContentAreaFilled(false);
+        setFocusPainted(false);
+        setBorderPainted(false);
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+        setOpaque(false);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                repaint();
+            }
+        });
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Fondo circular
+        Color bg = getModel().isRollover() ? hoverBgColor : bgColor;
+        g2.setColor(bg);
+        g2.fillOval(5, 5, getWidth() - 10, getHeight() - 10);
+
+        // Flecha
+        Color arrow = getModel().isRollover() ? hoverColor : arrowColor;
+        g2.setColor(arrow);
+        g2.setStroke(new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        int arrowSize = 8;
+
+        if (isRight) {
+            // Flecha derecha
+            g2.drawLine(centerX - arrowSize / 2, centerY - arrowSize, centerX + arrowSize / 2, centerY);
+            g2.drawLine(centerX + arrowSize / 2, centerY, centerX - arrowSize / 2, centerY + arrowSize);
+        } else {
+            // Flecha izquierda
+            g2.drawLine(centerX + arrowSize / 2, centerY - arrowSize, centerX - arrowSize / 2, centerY);
+            g2.drawLine(centerX - arrowSize / 2, centerY, centerX + arrowSize / 2, centerY + arrowSize);
+        }
+
+        g2.dispose();
+    }
+}
+
 public class SpotifyCloneUI extends JFrame {
+
+    // Variables para navegación (AGREGAR AL INICIO DE LA CLASE)
+    private int currentMixSet = 0;
+    private final int TOTAL_MIX_SETS = 2;
+    private JPanel centerPanel;
 
     public SpotifyCloneUI() {
         setTitle("Spotify - Clone");
@@ -336,76 +636,154 @@ public class SpotifyCloneUI extends JFrame {
         topPanel.add(titleBar, BorderLayout.NORTH);
         topPanel.add(menuBarContainer, BorderLayout.SOUTH);
 
-        // Panel Central
-        JPanel centerPanel = new JPanel(new GridLayout(2, 2, 20, 20));
+        // DESDE AQUÍ REEMPLAZA TODO HASTA EL FINAL DEL CONSTRUCTOR
+
+        // Panel principal que contendrá las flechas y el panel de mix
+        JPanel mainContentPanel = new JPanel(new BorderLayout());
+        mainContentPanel.setBackground(background);
+
+        // Panel contenedor para los mix con flechas
+        JPanel mixContainerPanel = new JPanel(new BorderLayout());
+        mixContainerPanel.setBackground(background);
+        mixContainerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Panel para los mix (GridLayout)
+        centerPanel = new JPanel(new GridLayout(2, 2, 15, 15));
         centerPanel.setBackground(background);
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Crear flechas de navegación
+        NavigationArrow leftArrow = new NavigationArrow(false);
+        NavigationArrow rightArrow = new NavigationArrow(true);
+        // Panel para la flecha izquierda
+        JPanel leftArrowPanel = new JPanel(new GridBagLayout());
+        leftArrowPanel.setBackground(background);
+        leftArrowPanel.setPreferredSize(new Dimension(70, 0));
+        leftArrowPanel.add(leftArrow);
+
+        // Panel para la flecha derecha
+        JPanel rightArrowPanel = new JPanel(new GridBagLayout());
+        rightArrowPanel.setBackground(background);
+        rightArrowPanel.setPreferredSize(new Dimension(70, 0));
+        rightArrowPanel.add(rightArrow);
+
+        // Eventos para las flechas
+        leftArrow.addActionListener(e -> {
+            if (currentMixSet > 0) {
+                currentMixSet--;
+                updateMixDisplay();
+            }
+        });
+
+        rightArrow.addActionListener(e -> {
+            if (currentMixSet < TOTAL_MIX_SETS - 1) {
+                currentMixSet++;
+                updateMixDisplay();
+            }
+        });
+
+        // Ensamblar el panel de mix con flechas
+        mixContainerPanel.add(leftArrowPanel, BorderLayout.WEST);
+        mixContainerPanel.add(centerPanel, BorderLayout.CENTER);
+        mixContainerPanel.add(rightArrowPanel, BorderLayout.EAST);
+
+        // Inicializar con el primer conjunto de mix
+        updateMixDisplay();
+
+        add(topPanel, BorderLayout.NORTH);
+        add(mixContainerPanel, BorderLayout.CENTER);
+    }
+
+    // Método para actualizar los mix mostrados (AGREGAR ESTE MÉTODO)
+    private void updateMixDisplay() {
+        centerPanel.removeAll();
 
         // Diferentes conjuntos de imágenes para cada Mix
         String[][] allCoverImages = {
-            // Mix 1 - Hip Hop/Rap
-            {"/resources/cover1.png", "/resources/cover2.png", "/resources/cover3.png", "/resources/cover.png"},
-            // Mix 2 - Pop/Electronic
-            {"/resources/Kris r1.png", "/resources/Kris r2.png", "/resources/Kris r3.png", "/resources/Kris r4.png"},
-            // Mix 3 - Rock/Alternative
-            {"/resources/Vallenato4.png", "/resources/Vallenato1.png", "/resources/Vallenato2.png", "/resources/Vallenato3.png"},
-            // Mix 4 - R&B/Soul
-            {"/resources/Salsa4.png", "/resources/Salsa1.png", "/resources/Salsa2.png", "/resources/Salsa3.png"}
+                // Mix 1 - Hip Hop/Rap
+                { "/resources/cover1.png", "/resources/cover2.png", "/resources/cover3.png", "/resources/cover.png" },
+                // Mix 2 - Pop/Electronic
+                { "/resources/Kris r1.png", "/resources/Kris r2.png", "/resources/Kris r3.png",
+                        "/resources/Kris r4.png" },
+                // Mix 3 - Rock/Alternative
+                { "/resources/Vallenato4.png", "/resources/Vallenato1.png", "/resources/Vallenato2.png",
+                        "/resources/Vallenato3.png" },
+                // Mix 4 - R&B/Soul
+                { "/resources/Salsa4.png", "/resources/Salsa1.png", "/resources/Salsa2.png", "/resources/Salsa3.png" }
         };
 
-        String[] mixNames = {"TTrap Mix", "reggaeton Mix", "Vallenato Mix", "Salsa Mix"};
-        String[] mixSubtitles = {"Pirlo", "Kris r", "Binomio de Oro", "Franki ruiz"};
+        String[] mixNames = { "Discovery Mix", "Reggaeton Hits", "Vallenato Clásico", "Salsa Mix" };
+        String[] mixSubtitles = { "Updated Today", "Kris R", "Binomio de Oro", "Frankie Ruiz" };
 
-        for (int i = 0; i < 4; i++) {
-            RoundedPanel mixPanel = new RoundedPanel(30);
-            mixPanel.setLayout(new BorderLayout());
-            mixPanel.setBackground(panelColor);
-            mixPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        Color[] placeholderColors = {
+                new Color(255, 20, 147), // Rosa/magenta para Discovery
+                new Color(0, 191, 255), // Azul cielo para Reggaeton
+                new Color(255, 165, 0), // Naranja para Vallenato
+                new Color(220, 20, 60) // Rojo para Salsa
+        };
+        String[] placeholderSymbols = { "🎵", "🔥", "🎸", "💃" };
 
-            JLabel title = new JLabel(mixNames[i]);
-            title.setForeground(textColor);
-            title.setFont(new Font("SansSerif", Font.BOLD, 16));
+        // Mix adicionales
+        String[][] additionalCoverImages = {
+                // Mix 5 - Merengue
+                { "/resources/merengue1.png", "/resources/merengue2.png", "/resources/merengue3.png",
+                        "/resources/merengue4.png" },
+                // Mix 6 - Bachata
+                { "/resources/bachata1.png", "/resources/bachata2.png", "/resources/bachata3.png",
+                        "/resources/bachata4.png" },
+                // Mix 7 - Cumbia
+                { "/resources/cumbia1.png", "/resources/cumbia2.png", "/resources/cumbia3.png",
+                        "/resources/cumbia4.png" },
+                // Mix 8 - Tropical
+                { "/resources/tropical1.png", "/resources/tropical2.png", "/resources/tropical3.png",
+                        "/resources/tropical4.png" }
+        };
 
-            JLabel subtitle = new JLabel(mixSubtitles[i]);
-            subtitle.setForeground(Color.GRAY);
-            subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
-            
-            RoundedPanel header = new RoundedPanel(20);
-            header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-            header.setBackground(new Color(40, 40, 40));
-            header.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-            header.add(title);
-            header.add(subtitle);
+        String[] additionalMixNames = { "Merengue Clásico", "Bachata Romántica", "Cumbia Colombiana", "Tropical Mix" };
+        String[] additionalMixSubtitles = { "Juan Luis Guerra", "Romeo Santos", "Los Ángeles Azules", "Marc Anthony" };
 
-            // Panel de carátulas con GridLayout adaptable
-            JPanel coverPanel = new JPanel(new GridLayout(2, 2, 3, 3));
-            coverPanel.setBackground(panelColor);
+        Color[] additionalPlaceholderColors = {
+                new Color(50, 205, 50), // Verde para Merengue
+                new Color(255, 69, 0), // Rojo-naranja para Bachata
+                new Color(138, 43, 226), // Violeta para Cumbia
+                new Color(255, 215, 0) // Dorado para Tropical
+        };
+        String[] additionalPlaceholderSymbols = { "🎺", "💕", "🪘", "🌴" };
 
-            String[] coverImages = allCoverImages[i];
-            Color[] placeholderColors = {
-                new Color(180, 50, 50),   // Rojo para Hip Hop
-                new Color(50, 150, 200),  // Azul para Pop
-                new Color(120, 60, 180),  // Púrpura para Rock
-                new Color(200, 120, 50)   // Naranja para R&B
-            };
-            String[] placeholderSymbols = {"🎤", "🎵", "🎸", "🎶"};
+        String[][] currentCoverImages;
+        String[] currentMixNames;
+        String[] currentMixSubtitles;
+        Color[] currentPlaceholderColors;
+        String[] currentPlaceholderSymbols;
 
-            for (int j = 0; j < coverImages.length; j++) {
-                ImageCoverPanel cover = new ImageCoverPanel(
-                    coverImages[j], 
-                    placeholderSymbols[i], 
-                    placeholderColors[i]
-                );
-                coverPanel.add(cover);
-            }
-
-            mixPanel.add(header, BorderLayout.NORTH);
-            mixPanel.add(coverPanel, BorderLayout.CENTER);
-            centerPanel.add(mixPanel);
+        if (currentMixSet == 0) {
+            // Primer conjunto (mix originales)
+            currentCoverImages = allCoverImages;
+            currentMixNames = mixNames;
+            currentMixSubtitles = mixSubtitles;
+            currentPlaceholderColors = placeholderColors;
+            currentPlaceholderSymbols = placeholderSymbols;
+        } else {
+            // Segundo conjunto (mix adicionales)
+            currentCoverImages = additionalCoverImages;
+            currentMixNames = additionalMixNames;
+            currentMixSubtitles = additionalMixSubtitles;
+            currentPlaceholderColors = additionalPlaceholderColors;
+            currentPlaceholderSymbols = additionalPlaceholderSymbols;
         }
 
-        add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
+        // Crear los MixButtons
+        for (int i = 0; i < 4; i++) {
+            MixButton mixButton = new MixButton(
+                    currentMixNames[i],
+                    currentMixSubtitles[i],
+                    currentCoverImages[i],
+                    currentPlaceholderColors[i],
+                    currentPlaceholderSymbols[i]);
+            centerPanel.add(mixButton);
+        }
+
+        centerPanel.revalidate();
+        centerPanel.repaint();
     }
 
     public static void mostrarInterfaz() {
