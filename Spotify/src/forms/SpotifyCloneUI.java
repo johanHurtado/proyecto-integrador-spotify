@@ -3,7 +3,6 @@ package forms;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
 
 class RoundedPanel extends JPanel {
     private int cornerRadius;
