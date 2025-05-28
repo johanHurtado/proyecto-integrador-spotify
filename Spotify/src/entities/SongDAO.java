@@ -1,3 +1,7 @@
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +12,24 @@ import Database.Conexion;
 
 public class SongDAO {
     // ! CRUD
+
+    //metodo para convertir de imagen a byte
+    public byte[] imageToByteArray(File file) {
+    try {
+        FileInputStream fis = new FileInputStream(file);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        int readNum;
+        while ((readNum = fis.read(buf)) != -1) {
+            bos.write(buf, 0, readNum);
+        }
+        fis.close();
+        return bos.toByteArray();
+    } catch (IOException ex) {
+        ex.printStackTrace();
+    }
+    return null;
+}
 
     // Metodo para obtener todas las canciones
     public List<Song> getAllSongs() {
