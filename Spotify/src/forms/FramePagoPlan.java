@@ -9,6 +9,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.text.ParseException;
+import DAO.SubscriptionDAO;
+import DAO.UserDAO;
 
 public class FramePagoPlan extends JFrame {
     private Point initialClick;
@@ -200,7 +202,9 @@ public class FramePagoPlan extends JFrame {
                 new FrameRegistroPaso4();
                 dispose();
             }
-        });
+
+            
+            });
 
         mainPanel.add(comprar);
         mainPanel.add(Box.createVerticalStrut(20));

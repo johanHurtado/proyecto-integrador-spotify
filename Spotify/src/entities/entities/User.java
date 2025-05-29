@@ -13,12 +13,12 @@ public class User {
     public User() { }
 
     public User(int idUsuario,
-                String nombreUsuario,
-                String correo,
-                String telefono,
-                String claveHash,
-                int idRol,
-                int idSuscripcion) {
+        String nombreUsuario,
+        String correo,
+        String telefono,
+        String claveHash,
+        int idRol,
+        int idSuscripcion) {
         this.idUsuario      = idUsuario;
         this.nombreUsuario  = nombreUsuario;
         this.correo         = correo;

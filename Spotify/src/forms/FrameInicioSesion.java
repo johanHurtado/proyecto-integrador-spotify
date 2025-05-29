@@ -6,6 +6,8 @@ import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import DAO.UserDAO;
+import entities.User;
 
 public class FrameInicioSesion extends JFrame {
     private JLabel errorMessage;
@@ -85,82 +87,59 @@ public class FrameInicioSesion extends JFrame {
         userLabel.setForeground(Color.WHITE);
         userLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JTextField userField = new JTextField() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
-                super.paintComponent(g);
-            }
-        };
+        JTextField userField = new JTextField();
         userField.setBackground(Color.BLACK);
         userField.setForeground(Color.WHITE);
         userField.setCaretColor(Color.WHITE);
         userField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         userField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        userField.setOpaque(false);
+        userField.setOpaque(true);
 
         JLabel passLabel = new JLabel("Contraseña");
         passLabel.setForeground(Color.WHITE);
         passLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPasswordField passField = new JPasswordField() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
-                super.paintComponent(g);
-            }
-        };
+        JPasswordField passField = new JPasswordField();
         passField.setBackground(Color.BLACK);
         passField.setForeground(Color.WHITE);
         passField.setCaretColor(Color.WHITE);
         passField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         passField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        passField.setOpaque(false);
+        passField.setOpaque(true);
 
-        JButton loginButton = new JButton("Iniciar sesión") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                if (getModel().isRollover()) {
-                    g2.setColor(getBackground().darker());
-                } else {
-                    g2.setColor(getBackground());
-                }
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
-                super.paintComponent(g);
-            }
-        };
+        JButton loginButton = new JButton("Iniciar sesión");
         loginButton.setBackground(new Color(30, 215, 96));
         loginButton.setForeground(Color.BLACK);
         loginButton.setFocusPainted(false);
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         loginButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        loginButton.setContentAreaFilled(false);
-        loginButton.setOpaque(false);
         loginButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         loginButton.addActionListener(e -> {
             String user = userField.getText().trim();
             String pass = new String(passField.getPassword()).trim();
 
-            if (user.equals("johanhurtado2006@gmail.com") && pass.equals("123456")) {
-                errorMessage.setVisible(false);
-                dispose(); // Cierra la ventana de inicio de sesión
-                
-                setVisible(true);
-                new SpotifyCloneUI();
+    // 👉 Creamos un nuevo usuario
+            User nuevoUsuario = new User();
+            nuevoUsuario.setNombreUsuario(user);
+            nuevoUsuario.setCorreo(user); // Suponiendo que se usa el email como username
+            nuevoUsuario.setClaveHash(pass);
+            nuevoUsuario.setIdRol(2);    // ID 2 = Usuario normal (puedes ajustar según tus roles)
+
+            boolean exito = new UserDAO().insert(nuevoUsuario);
+
+            if (exito) {
+            errorMessage.setVisible(false);
+            dispose();
+
+            new SpotifyCloneUI(); // Cambiar a FrameAdmin() si lo deseas
             } else {
-                errorMessage.setVisible(true);
+            errorMessage.setText("⚠ No se pudo registrar el usuario.");
+            errorMessage.setVisible(true);
             }
-        });
+
+            });
 
         JLabel register = new JLabel("¿No tienes cuenta? ");
         register.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -173,11 +152,10 @@ public class FrameInicioSesion extends JFrame {
         registerLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         registerLink.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 👉 Conecta con el nuevo frame
         registerLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                new FrameRegistro(); // Mostrar el nuevo frame
+                new FrameRegistro();
             }
         });
 

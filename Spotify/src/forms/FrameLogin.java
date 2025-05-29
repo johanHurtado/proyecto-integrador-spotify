@@ -1,12 +1,15 @@
 package forms;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+
+import DAO.UserDAO;
+import entities.User;
 
 public class FrameLogin extends JFrame {
     private BufferedImage backgroundImage;
@@ -131,9 +134,18 @@ public class FrameLogin extends JFrame {
         loginBtn.setBorder(BorderFactory.createEmptyBorder(12, 25, 12, 25));
         loginBtn.setFont(new Font("Arial", Font.BOLD, 16));
         loginBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         loginBtn.addActionListener(e -> {
-            new FrameInicioSesion();
-            dispose();
+            // Ejemplo de uso del DAO:
+            User usuario = new User();
+            usuario.setNombreUsuario("usuario_demo");
+            usuario.setCorreo("demo@email.com");
+            usuario. setClaveHash("123456");
+            usuario.setIdRol(2); // Usuario normal
+
+            boolean resultado = new UserDAO().insert(usuario);
+            JOptionPane.showMessageDialog(this,
+                    resultado ? "Usuario insertado exitosamente." : "Error al insertar el usuario.");
         });
 
         JLabel eresNuevo = new JLabel("¿Eres nuevo en Spotify?");
@@ -146,25 +158,11 @@ public class FrameLogin extends JFrame {
         registrarTexto.setForeground(new Color(30, 215, 96));
         registrarTexto.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         registrarTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Efecto visual y acción para abrir FrameRegistro
         registrarTexto.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseEntered(MouseEvent e) {
-                registrarTexto.setFont(registrarTexto.getFont().deriveFont(Font.BOLD | Font.ITALIC));
-                registrarTexto.setForeground(new Color(102, 255, 178)); // Color brillante
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                registrarTexto.setFont(new Font("Arial", Font.BOLD, 13));
-                registrarTexto.setForeground(new Color(30, 215, 96));
-            }
-
-            @Override
             public void mouseClicked(MouseEvent e) {
-                new FrameRegistro(); // Abre el frame de registro
-                dispose(); // Cierra el frame actual
+                new FrameRegistro();
+                dispose();
             }
         });
 
