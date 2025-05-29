@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import Database.Conexion;
-import entities.Artist;
+import entities.entities.*;
 
 public class ArtistDAO {
     // ! CRUD
