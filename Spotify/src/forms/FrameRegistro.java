@@ -1,4 +1,5 @@
 package forms;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -37,7 +38,12 @@ public class FrameRegistro extends JFrame {
         JButton minimizeBtn = createMacCircle(Color.ORANGE);
         minimizeBtn.addActionListener(e -> setState(Frame.ICONIFIED));
         JButton maximizeBtn = createMacCircle(Color.GREEN);
-        maximizeBtn.addActionListener(e -> setExtendedState(Frame.MAXIMIZED_BOTH));
+        maximizeBtn.addActionListener(e -> {
+            if (getExtendedState() != Frame.MAXIMIZED_VERT)
+                setExtendedState(Frame.MAXIMIZED_BOTH);
+            else
+                setExtendedState(Frame.NORMAL);
+        });
 
         titleBar.add(closeBtn);
         titleBar.add(minimizeBtn);
@@ -95,7 +101,8 @@ public class FrameRegistro extends JFrame {
 
         navPanel.add(backBtn);
 
-        JLabel heading = new JLabel("<html><div style='text-align: center;'>Regístrate<br>para empezar<br>a escuchar<br>contenido</div></html>");
+        JLabel heading = new JLabel(
+                "<html><div style='text-align: center;'>Regístrate<br>para empezar<br>a escuchar<br>contenido</div></html>");
         heading.setFont(new Font("Arial", Font.BOLD, 24));
         heading.setForeground(Color.WHITE);
         heading.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -195,11 +202,17 @@ public class FrameRegistro extends JFrame {
 
             @Override
             protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(color);
                 g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.dispose();
             }
         };
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new FrameRegistroPaso4());
     }
 }

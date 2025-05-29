@@ -1,47 +1,69 @@
 package entities;
+
+/**
+ * Entidad que representa la tabla 'suscripciones' de la base de datos.
+ */
 public class Subscription {
-    private Integer id;
-    private String subName;
-    private String subBenefits;
-    private String subDescription;
-    
-    public Subscription() {
-    
+    /** Corresponde a id_suscripcion */
+    private Integer idSuscripcion;
+    /** Corresponde a nombre_suscripcion */
+    private String nombreSuscripcion;
+    /** Corresponde a beneficios_suscripcion */
+    private String beneficiosSuscripcion;
+    /** Corresponde a descripcion_suscripcion */
+    private String descripcionSuscripcion;
+
+    public Subscription() { }
+
+    public Subscription(Integer idSuscripcion,
+                        String nombreSuscripcion,
+                        String beneficiosSuscripcion,
+                        String descripcionSuscripcion) {
+        this.idSuscripcion         = idSuscripcion;
+        this.nombreSuscripcion     = nombreSuscripcion;
+        this.beneficiosSuscripcion = beneficiosSuscripcion;
+        this.descripcionSuscripcion= descripcionSuscripcion;
     }
-    public Subscription(Integer id, String subName, String subBenefits, String subDescription) {
-        this.id = id;
-        this.subName = subName;
-        this.subBenefits = subBenefits;
-        this.subDescription = subDescription;
+
+    public Integer getIdSuscripcion() {
+        return idSuscripcion;
     }
-    public Integer getId() {
-        return id;
+
+    public void setIdSuscripcion(Integer idSuscripcion) {
+        this.idSuscripcion = idSuscripcion;
     }
-    public void setId(Integer id) {
-        this.id = id;
+
+    public String getNombreSuscripcion() {
+        return nombreSuscripcion;
     }
-    public String getSubName() {
-        return subName;
+
+    public void setNombreSuscripcion(String nombreSuscripcion) {
+        this.nombreSuscripcion = nombreSuscripcion;
     }
-    public void setSubName(String subName) {
-        this.subName = subName;
+
+    public String getBeneficiosSuscripcion() {
+        return beneficiosSuscripcion;
     }
-    public String getSubBenefits() {
-        return subBenefits;
+
+    public void setBeneficiosSuscripcion(String beneficiosSuscripcion) {
+        this.beneficiosSuscripcion = beneficiosSuscripcion;
     }
-    public void setSubBenefits(String subBenefits) {
-        this.subBenefits = subBenefits;
+
+    public String getDescripcionSuscripcion() {
+        return descripcionSuscripcion;
     }
-    public String getSubDescription() {
-        return subDescription;
+
+    public void setDescripcionSuscripcion(String descripcionSuscripcion) {
+        this.descripcionSuscripcion = descripcionSuscripcion;
     }
-    public void setSubDescription(String subDescription) {
-        this.subDescription = subDescription;
-    }
+
     @Override
     public String toString() {
-        return "Subscription [id=" + id + ", subName=" + subName + ", subBenefits=" + subBenefits + ", subDescription="
-                + subDescription + "]";
+        return "Subscription{" +
+               "idSuscripcion=" + idSuscripcion +
+               ", nombreSuscripcion='" + nombreSuscripcion + '\'' +
+               ", beneficiosSuscripcion='" + beneficiosSuscripcion + '\'' +
+               ", descripcionSuscripcion='" + descripcionSuscripcion + '\'' +
+               '}';
     }
-    
 }

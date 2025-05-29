@@ -9,42 +9,37 @@ public class SpotifyPremiumPlansUI extends JFrame {
     private Point initialClick;
 
     public SpotifyPremiumPlansUI() {
-        setTitle("Spotify Premium Plans");
-        setSize(800, 900);
+        super("Elige tu plan");
+        // ── Ventana sin bordes y redondeada ──────────────────────────────
         setUndecorated(true);
+        setSize(800, 900);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        // apply rounded corners initially
+        getContentPane().setLayout(new BorderLayout());
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 40, 40));
-
-        // update shape on resize / maximize
         addComponentListener(new ComponentAdapter() {
-            @Override
             public void componentResized(ComponentEvent e) {
-                if (getExtendedState() == Frame.MAXIMIZED_BOTH) {
-                    setShape(null); // remove shape when maximized
-                } else {
-                    setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 40, 40));
-                }
+                setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 40, 40));
             }
         });
 
-        setLayout(new BorderLayout());
-
-        // title bar
-        JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 7));
+        // ── Barra de título mac-style ────────────────────────────────────
+        JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         titleBar.setBackground(new Color(35, 35, 35));
         titleBar.setPreferredSize(new Dimension(800, 30));
 
-        JButton closeBtn = createMacCircle(Color.RED);
+        // Botón rojo: cerrar
+        JButton closeBtn = createMacCircle(new Color(240, 80, 80));
         closeBtn.addActionListener(e -> System.exit(0));
 
-        JButton minimizeBtn = createMacCircle(Color.ORANGE);
-        minimizeBtn.addActionListener(e -> setState(Frame.ICONIFIED));
+        // Botón amarillo: minimizar
+        JButton minBtn = createMacCircle(new Color(245, 190, 80));
+        minBtn.addActionListener(e -> setState(Frame.ICONIFIED));
 
-        JButton maximizeBtn = createMacCircle(Color.GREEN);
-        maximizeBtn.addActionListener(e -> {
-            if (getExtendedState() != Frame.MAXIMIZED_BOTH) {
+        // Botón verde: maximizar/restaurar
+        JButton maxBtn = createMacCircle(new Color(100, 210, 100));
+        maxBtn.addActionListener(e -> {
+            if ((getExtendedState() & Frame.MAXIMIZED_BOTH) != Frame.MAXIMIZED_BOTH) {
                 setExtendedState(Frame.MAXIMIZED_BOTH);
             } else {
                 setExtendedState(Frame.NORMAL);
@@ -52,46 +47,48 @@ public class SpotifyPremiumPlansUI extends JFrame {
         });
 
         titleBar.add(closeBtn);
-        titleBar.add(minimizeBtn);
-        titleBar.add(maximizeBtn);
+        titleBar.add(minBtn);
+        titleBar.add(maxBtn);
 
-        // allow dragging from titleBar
+        // Arrastrar ventana al hacer drag sobre titleBar
         titleBar.addMouseListener(new MouseAdapter() {
-            @Override public void mousePressed(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 initialClick = e.getPoint();
             }
         });
         titleBar.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override public void mouseDragged(MouseEvent e) {
+            public void mouseDragged(MouseEvent e) {
                 int dx = e.getX() - initialClick.x;
                 int dy = e.getY() - initialClick.y;
                 setLocation(getX() + dx, getY() + dy);
             }
         });
 
-        add(titleBar, BorderLayout.NORTH);
+        getContentPane().add(titleBar, BorderLayout.NORTH);
 
-        // main scrollable content
-        JPanel mainPanel = new JPanel();
-        mainPanel.setBackground(new Color(18, 18, 18));
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // ── Panel de contenido con scroll ─────────────────────────────────
+        JPanel content = new JPanel();
+        content.setBackground(new Color(18, 18, 18));
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // Encabezado
         JLabel heading = new JLabel("Elige tu plan");
         heading.setFont(new Font("Segoe UI", Font.BOLD, 28));
         heading.setForeground(Color.WHITE);
         heading.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(heading);
-        mainPanel.add(Box.createVerticalStrut(15));
+        content.add(heading);
+        content.add(Box.createVerticalStrut(10));
 
-        JLabel subheading = new JLabel("Escucha música sin anuncios, descarga tus canciones favoritas y más.");
-        subheading.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        subheading.setForeground(Color.LIGHT_GRAY);
-        subheading.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(subheading);
-        mainPanel.add(Box.createVerticalStrut(30));
+        JLabel sub = new JLabel("Escucha música sin anuncios, descarga tus canciones favoritas y más.");
+        sub.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        sub.setForeground(Color.LIGHT_GRAY);
+        sub.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(sub);
+        content.add(Box.createVerticalStrut(30));
 
-        mainPanel.add(createFreePlanPanel(
+        // Plan Free
+        content.add(createPlanPanel(
             "Free", "COP 0 al mes",
             new String[]{
                 "1 cuenta Free",
@@ -99,11 +96,16 @@ public class SpotifyPremiumPlansUI extends JFrame {
                 "Cambio de canciones solo hacia adelante",
                 "Reproducción bajo demanda"
             },
-            new Color(30, 215, 96)
+            new Color(30, 215, 96),
+            e -> {
+                new FrameRegistroPaso4().setVisible(true);
+                dispose();
+            }
         ));
-        mainPanel.add(Box.createVerticalStrut(20));
+        content.add(Box.createVerticalStrut(20));
 
-        mainPanel.add(createPremiumPlanPanel(
+        // Plan Premium
+        content.add(createPlanPanel(
             "Premium", "COP 16,900 al mes",
             new String[]{
                 "1 cuenta Premium",
@@ -111,126 +113,120 @@ public class SpotifyPremiumPlansUI extends JFrame {
                 "Escucha en cualquier lugar, incluso sin conexión",
                 "Reproducción bajo demanda"
             },
-            new Color(245, 155, 35)
+            new Color(245, 155, 35),
+            e -> {
+                new FramePagoPlan().setVisible(true);
+                dispose();
+            }
         ));
-        mainPanel.add(Box.createVerticalStrut(30));
+        content.add(Box.createVerticalStrut(30));
 
-        JLabel legalInfo = new JLabel(
+        // Texto legal
+        JLabel legal = new JLabel(
             "<html><center>Se aplican términos y condiciones. La disponibilidad puede variar según el plan y la región.</center></html>"
         );
-        legalInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        legalInfo.setForeground(Color.LIGHT_GRAY);
-        legalInfo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(legalInfo);
-        mainPanel.add(Box.createVerticalStrut(20));
+        legal.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        legal.setForeground(Color.LIGHT_GRAY);
+        legal.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(legal);
 
-        JScrollPane scrollPane = new JScrollPane(mainPanel);
-        scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        add(scrollPane, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(content);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        getContentPane().add(scroll, BorderLayout.CENTER);
 
         setVisible(true);
     }
 
-    private JPanel createFreePlanPanel(String title, String price, String[] features, Color accent) {
-        JPanel panel = createBasePlanPanel(title, price, features, accent);
-
-        JButton btn = new JButton("Siguiente");
-        btn.setBackground(accent);
-        btn.setForeground(Color.BLACK);
-        btn.setFocusPainted(false);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setMaximumSize(new Dimension(180, 35));
-        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
-        btn.addActionListener(e -> {
-            FrameRegistroPaso4 paso4 = new FrameRegistroPaso4();
-            paso4.setVisible(true);
-            dispose();
-        });
-
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(btn);
-        return panel;
-    }
-
-    private JPanel createPremiumPlanPanel(String title, String price, String[] features, Color accent) {
-        JPanel panel = createBasePlanPanel(title, price, features, accent);
-
-        JButton btn = new JButton("Siguiente");
-        btn.setBackground(accent);
-        btn.setForeground(Color.BLACK);
-        btn.setFocusPainted(false);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setMaximumSize(new Dimension(180, 35));
-        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
-        btn.addActionListener(e -> {
-            FramePagoPlan pago = new FramePagoPlan();
-            pago.setVisible(true);
-            dispose();
-        });
-
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(btn);
-        return panel;
-    }
-
-    private JPanel createBasePlanPanel(String title, String price, String[] features, Color accent) {
-        JPanel panel = new RoundedPanel(15);
+    private JPanel createPlanPanel(String title, String price, String[] features, Color accent, ActionListener al) {
+        JPanel panel = new JPanel() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                super.paintComponent(g);
+                g2.dispose();
+            }
+        };
         panel.setBackground(new Color(24, 24, 24));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(accent, 2),
-            BorderFactory.createEmptyBorder(12, 12, 12, 12)
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         panel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitle.setForeground(accent);
-        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(lblTitle);
+        JLabel lbl = new JLabel(title);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lbl.setForeground(accent);
+        lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(lbl);
 
         panel.add(Box.createVerticalStrut(5));
-        JLabel lblPrice = new JLabel(price);
-        lblPrice.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblPrice.setForeground(Color.WHITE);
-        lblPrice.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(lblPrice);
+        JLabel pr = new JLabel(price);
+        pr.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        pr.setForeground(Color.WHITE);
+        pr.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(pr);
 
         panel.add(Box.createVerticalStrut(10));
         for (String feat : features) {
-            JLabel lf = new JLabel("• " + feat);
-            lf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            lf.setForeground(Color.LIGHT_GRAY);
-            lf.setAlignmentX(Component.LEFT_ALIGNMENT);
-            panel.add(lf);
+            JLabel f = new JLabel("• " + feat);
+            f.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            f.setForeground(Color.LIGHT_GRAY);
+            f.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panel.add(f);
             panel.add(Box.createVerticalStrut(4));
         }
+
+        panel.add(Box.createVerticalStrut(10));
+        JButton btn = new JButton("Siguiente") {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                super.paintComponent(g);
+                g2.dispose();
+            }
+        };
+        btn.setBackground(accent);
+        btn.setForeground(Color.BLACK);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFocusPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(false);
+        btn.setMaximumSize(new Dimension(180, 35));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.addActionListener(al);
+        panel.add(btn);
 
         return panel;
     }
 
     private JButton createMacCircle(Color color) {
-        return new JButton() {
-            {
-                setPreferredSize(new Dimension(12, 12));
-                setContentAreaFilled(false);
-                setFocusPainted(false);
-                setBorderPainted(false);
-                setOpaque(false);
-            }
-            @Override
-            protected void paintComponent(Graphics g) {
+        JButton b = new JButton() {
+            @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                                     RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(color);
                 g2.fillOval(0, 0, getWidth(), getHeight());
                 g2.dispose();
+                super.paintComponent(g);
             }
         };
+        b.setPreferredSize(new Dimension(12, 12));
+        b.setMaximumSize(new Dimension(12, 12));
+        b.setMinimumSize(new Dimension(12, 12));
+        b.setContentAreaFilled(false);
+        b.setBorderPainted(false);
+        b.setFocusPainted(false);
+        b.setOpaque(false);
+        return b;
     }
 
     public static void main(String[] args) {
