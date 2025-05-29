@@ -1,91 +1,57 @@
-package entities;
-import java.util.Arrays;
+package entities.entities;
 
+/**
+ * Entity class that mirrors the “canciones” table.
+ * MP3 is stored as a MEDIUMBLOB (byte []) in the column “archivo_mp3”.
+ */
 public class Song {
-    private Integer idSong;
-    private String title;
-    private String description;
-    private double timeLength;
-    private Artist artist;
-    private Gender gender;
-    private byte[] coverImage;
-    
-    public Song() {
-    
+
+    private int     id;
+    private String  title;
+    private String  description;
+    private double  duration;      // seconds
+    private int     artistId;
+    private int     genreId;
+    private byte[]  coverArt;      // optional
+    private byte[]  mp3Bytes;      // the actual MP3 file
+
+    public Song() { }
+
+    public Song(int id, String title, String description, double duration,
+                int artistId, int genreId, byte[] coverArt, byte[] mp3Bytes) {
+        this.id         = id;
+        this.title      = title;
+        this.description= description;
+        this.duration   = duration;
+        this.artistId   = artistId;
+        this.genreId    = genreId;
+        this.coverArt   = coverArt;
+        this.mp3Bytes   = mp3Bytes;
     }
 
-    public Song(Integer idSong, String title, String description, double timeLength, Artist artist, Gender gender,
-            byte[] coverImage) {
-        this.idSong = idSong;
-        this.title = title;
-        this.description = description;
-        this.timeLength = timeLength;
-        this.artist = artist;
-        this.gender = gender;
-        this.coverImage = coverImage;
-    }
+    /* ======= Getters & setters ======= */
 
-    public Integer getIdSong() {
-        return idSong;
-    }
+    public int getId()                       { return id; }
+    public void setId(int id)                { this.id = id; }
 
-    public void setIdSong(Integer idSong) {
-        this.idSong = idSong;
-    }
+    public String getTitle()                 { return title; }
+    public void setTitle(String title)       { this.title = title; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getDescription()           { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public double getDuration()              { return duration; }
+    public void setDuration(double duration) { this.duration = duration; }
 
-    public String getDescription() {
-        return description;
-    }
+    public int getArtistId()                 { return artistId; }
+    public void setArtistId(int artistId)    { this.artistId = artistId; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public int getGenreId()                  { return genreId; }
+    public void setGenreId(int genreId)      { this.genreId = genreId; }
 
-    public double getTimeLength() {
-        return timeLength;
-    }
+    public byte[] getCoverArt()              { return coverArt; }
+    public void setCoverArt(byte[] coverArt) { this.coverArt = coverArt; }
 
-    public void setTimeLength(double timeLength) {
-        this.timeLength = timeLength;
-    }
-
-    public Artist getArtist() {
-        return artist;
-    }
-
-    public void setArtist(Artist artist) {
-        this.artist = artist;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
-
-    public byte[] getCoverImage() {
-        return coverImage;
-    }
-
-    public void setCoverImage(byte[] coverImage) {
-        this.coverImage = coverImage;
-    }
-
-    @Override
-    public String toString() {
-        return "Song [idSong=" + idSong + ", title=" + title + ", description=" + description + ", timeLength="
-                + timeLength + ", artist=" + artist + ", gender=" + gender + ", coverImage="
-                + Arrays.toString(coverImage) + "]";
-    }
-    
+    public byte[] getMp3Bytes()              { return mp3Bytes; }
+    public void setMp3Bytes(byte[] mp3Bytes) { this.mp3Bytes = mp3Bytes; }
 }
