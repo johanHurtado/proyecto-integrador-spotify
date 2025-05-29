@@ -3,7 +3,7 @@ package forms;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -35,6 +35,11 @@ class RoundButton extends JButton {
         setFocusPainted(false);
         setBorderPainted(false);
         setBackground(color);
+        
+    }
+
+    public RoundButton(String string) {
+        //TODO Auto-generated constructor stub
     }
 
     @Override
