@@ -70,6 +70,12 @@ public class User {
         this.idRol = idRol;
     }
 
+    public Subscription getSubscription() {
+        return subscription;
+    }
+
+    public Integer getSubscriptionId(){
+        return subscription.getIdSuscripcion();
     public int getIdSuscripcion() {
         return idSuscripcion;
     }
