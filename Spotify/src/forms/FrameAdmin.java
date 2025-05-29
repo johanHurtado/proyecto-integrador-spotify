@@ -1,11 +1,14 @@
 package forms;
 
 import javax.swing.*;
+
+import DAO.ArtistDAO;
+import DAO.GenderDAO;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
-import entities.ArtistDAO;
-import entities.GenderDAO;
+
 import entities.Artist;
 import entities.Gender;
 
