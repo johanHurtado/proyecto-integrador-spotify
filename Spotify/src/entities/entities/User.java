@@ -79,7 +79,7 @@ public class User {
     }
 
     public Integer getSubscriptionId(){
-        return subscription.getId();
+        return subscription.getIdSuscripcion();
     }
 
     public void setSubscription(Subscription subscription) {

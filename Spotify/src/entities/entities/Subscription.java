@@ -16,9 +16,9 @@ public class Subscription {
     public Subscription() { }
 
     public Subscription(Integer idSuscripcion,
-                        String nombreSuscripcion,
-                        String beneficiosSuscripcion,
-                        String descripcionSuscripcion) {
+        String nombreSuscripcion,
+        String beneficiosSuscripcion,
+        String descripcionSuscripcion) {
         this.idSuscripcion         = idSuscripcion;
         this.nombreSuscripcion     = nombreSuscripcion;
         this.beneficiosSuscripcion = beneficiosSuscripcion;
