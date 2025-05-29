@@ -1,97 +1,92 @@
 package entities;
 
+
 public class User {
-    private Integer id;
-    private String name;
-    private String email;
-    private String password;
-    private Integer phoneNumber;
-    private Role role;
-    private Subscription subscription;
-    
-    public User() {
-    
+    private int idUsuario;
+    private String nombreUsuario;
+    private String correo;
+    private String telefono;
+    private String claveHash;
+    private int idRol;
+    private int idSuscripcion;
+
+    public User() { }
+
+    public User(int idUsuario,
+                String nombreUsuario,
+                String correo,
+                String telefono,
+                String claveHash,
+                int idRol,
+                int idSuscripcion) {
+        this.idUsuario      = idUsuario;
+        this.nombreUsuario  = nombreUsuario;
+        this.correo         = correo;
+        this.telefono       = telefono;
+        this.claveHash      = claveHash;
+        this.idRol          = idRol;
+        this.idSuscripcion  = idSuscripcion;
     }
 
-    public User(Integer id, String name, String email, String password, Integer phoneNumber, Role role, Subscription subscription) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
-        this.role = role;
-        this.subscription = subscription;
+    public int getIdUsuario() {
+        return idUsuario;
+    }
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
-    public Integer getId() {
-        return id;
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public String getCorreo() {
+        return correo;
+    }
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
 
-    public String getName() {
-        return name;
+    public String getTelefono() {
+        return telefono;
+    }
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getClaveHash() {
+        return claveHash;
+    }
+    public void setClaveHash(String claveHash) {
+        this.claveHash = claveHash;
     }
 
-    public String getEmail() {
-        return email;
+    public int getIdRol() {
+        return idRol;
+    }
+    public void setIdRol(int idRol) {
+        this.idRol = idRol;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+   
+    public int getIdSuscripcion() {
+        return idSuscripcion;
     }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Integer getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(Integer phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-    public Integer getRoleId() {
-        return role.getId();
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Subscription getSubscription() {
-        return subscription;
-    }
-
-    public Integer getSubscriptionId(){
-        return subscription.getIdSuscripcion();
-    }
-
-    public void setSubscription(Subscription subscription) {
-        this.subscription = subscription;
+    public void setIdSuscripcion(int idSuscripcion) {
+        this.idSuscripcion = idSuscripcion;
     }
 
     @Override
     public String toString() {
-        return "User [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", phoneNumber="
-                + phoneNumber + ", role=" + role + ", subscription=" + subscription + "]";
+        return "User{" +
+               "idUsuario=" + idUsuario +
+               ", nombreUsuario='" + nombreUsuario + '\'' +
+               ", correo='" + correo + '\'' +
+               ", telefono='" + telefono + '\'' +
+               ", idRol=" + idRol +
+               ", idSuscripcion=" + idSuscripcion +
+               '}';
     }
-
-    
-    
 }

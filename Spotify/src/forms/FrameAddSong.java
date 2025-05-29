@@ -3,7 +3,9 @@ package forms;
 
 import javax.swing.*;
 
-
+import DAO.ArtistDAO;
+import DAO.GenderDAO;
+import DAO.SongDAO;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

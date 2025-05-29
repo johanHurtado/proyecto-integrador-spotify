@@ -1,13 +1,12 @@
 package forms;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
 
 class RoundedPanel extends JPanel {
     private int cornerRadius;
@@ -35,11 +34,6 @@ class RoundButton extends JButton {
         setFocusPainted(false);
         setBorderPainted(false);
         setBackground(color);
-        
-    }
-
-    public RoundButton(String string) {
-        //TODO Auto-generated constructor stub
     }
 
     @Override
@@ -226,6 +220,10 @@ class ImageCoverPanel extends JPanel {
 
 // Nueva clase para el layout dinámico de imágenes estilo Discovery Mix
 class DynamicMixLayout extends JPanel {
+    public String[] getImages() {
+        return images;
+    }
+
     private String[] images;
     private Color placeholderColor;
     private String placeholderSymbol;
@@ -302,144 +300,6 @@ class DynamicMixLayout extends JPanel {
 }
 
 // Botón de Mix mejorado con layout dinámico
-class MixButton extends JPanel {
-    private Color defaultBg = new Color(35, 35, 35);
-    private Color hoverBg = new Color(45, 45, 45);
-    private Color pressedBg = new Color(55, 55, 55);
-    private boolean isHovered = false;
-    private boolean isPressed = false;
-    private int cornerRadius = 12;
-    private String mixName;
-    private String artistName;
-    private DynamicMixLayout mixLayout;
-
-    public MixButton(String mixName, String artistName, String[] coverImages, Color placeholderColor,
-            String placeholderSymbol) {
-        this.mixName = mixName;
-        this.artistName = artistName;
-
-        setLayout(new BorderLayout(0, 8));
-        setOpaque(false);
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
-        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-
-        // Layout dinámico para las imágenes
-        mixLayout = new DynamicMixLayout(coverImages, placeholderColor, placeholderSymbol);
-        mixLayout.setPreferredSize(new Dimension(280, 160));
-
-        // Forzar la inicialización del layout
-        SwingUtilities.invokeLater(() -> {
-            mixLayout.revalidate();
-            mixLayout.repaint();
-        });
-
-        // Panel de texto con gradiente de fondo
-        JPanel textPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // Gradiente sutil
-                GradientPaint gradient = new GradientPaint(
-                        0, 0, new Color(40, 40, 40, 200),
-                        0, getHeight(), new Color(20, 20, 20, 220));
-                g2.setPaint(gradient);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
-                g2.dispose();
-            }
-        };
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setOpaque(false);
-        textPanel.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-
-        // Título del mix
-        JLabel title = new JLabel(mixName);
-        title.setForeground(Color.WHITE);
-        title.setFont(new Font("SansSerif", Font.BOLD, 18));
-        title.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Subtítulo/artista
-        JLabel subtitle = new JLabel(artistName);
-        subtitle.setForeground(new Color(180, 180, 180));
-        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        textPanel.add(title);
-        textPanel.add(Box.createVerticalStrut(2));
-        textPanel.add(subtitle);
-
-        add(mixLayout, BorderLayout.CENTER);
-        add(textPanel, BorderLayout.SOUTH);
-
-        // Event listeners para interactividad
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                isHovered = true;
-                repaint();
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                isHovered = false;
-                isPressed = false;
-                repaint();
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                isPressed = true;
-                repaint();
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                isPressed = false;
-                repaint();
-                onMixClicked();
-            }
-        });
-    }
-
-    private void onMixClicked() {
-        System.out.println("Mix seleccionado: " + mixName + " - " + artistName);
-        JOptionPane.showMessageDialog(this,
-                "Reproduciendo: " + mixName + "\nArtista: " + artistName,
-                "Mix Seleccionado",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        Color bgColor = defaultBg;
-        if (isPressed) {
-            bgColor = pressedBg;
-        } else if (isHovered) {
-            bgColor = hoverBg;
-        }
-
-        g2.setColor(bgColor);
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
-
-        // Efecto de brillo y sombra cuando está hover
-        if (isHovered && !isPressed) {
-            // Sombra suave
-            g2.setColor(new Color(0, 0, 0, 30));
-            g2.fillRoundRect(2, 2, getWidth(), getHeight(), cornerRadius, cornerRadius);
-
-            // Brillo sutil
-            g2.setColor(new Color(255, 255, 255, 8));
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
-        }
-
-        g2.dispose();
-    }
-}
 
 // Clase para la flecha de navegación (AGREGAR ANTES DE LA CLASE SpotifyCloneUI)
 class NavigationArrow extends JButton {
@@ -507,11 +367,127 @@ class NavigationArrow extends JButton {
 public class SpotifyCloneUI extends JFrame {
 
     // Variables para navegación (AGREGAR AL INICIO DE LA CLASE)
+    private NowPlayingBar nowPlayingBar;
     private int currentMixSet = 0;
     private final int TOTAL_MIX_SETS = 2;
     private JPanel centerPanel;
 
+    class MixButton extends JPanel {
+        private Color defaultBg = new Color(35, 35, 35);
+        private Color hoverBg = new Color(45, 45, 45);
+        private Color pressedBg = new Color(55, 55, 55);
+        private boolean isHovered = false;
+        private boolean isPressed = false;
+        private int cornerRadius = 12;
+        private String mixName;
+        private String artistName;
+        private DynamicMixLayout mixLayout;
+        private String audioPath;
+        private Timer animationTimer;
+        private float animationProgress = 0f;
+        private final float ANIMATION_SPEED = 0.08f;
+
+        public MixButton(String mixName, String artistName, String[] coverImages, Color placeholderColor,
+                String placeholderSymbol, String audioPath) {
+            this.mixName = mixName;
+            this.artistName = artistName;
+            this.audioPath = audioPath;
+
+            setLayout(new BorderLayout(0, 8));
+            setOpaque(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+            mixLayout = new DynamicMixLayout(coverImages, placeholderColor, placeholderSymbol);
+            mixLayout.setPreferredSize(new Dimension(280, 160));
+
+            SwingUtilities.invokeLater(() -> {
+                mixLayout.revalidate();
+                mixLayout.repaint();
+            });
+
+            JPanel textPanel = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    GradientPaint gradient = new GradientPaint(
+                            0, 0, new Color(40, 40, 40, 200),
+                            0, getHeight(), new Color(20, 20, 20, 220));
+                    g2.setPaint(gradient);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                    g2.dispose();
+                }
+            };
+
+            textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+            textPanel.setOpaque(false);
+            textPanel.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
+            JLabel title = new JLabel(mixName);
+            title.setForeground(Color.WHITE);
+            title.setFont(new Font("SansSerif", Font.BOLD, 18));
+            title.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            JLabel subtitle = new JLabel(artistName);
+            subtitle.setForeground(new Color(180, 180, 180));
+            subtitle.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            textPanel.add(title);
+            textPanel.add(Box.createVerticalStrut(2));
+            textPanel.add(subtitle);
+
+            add(mixLayout, BorderLayout.CENTER);
+            add(textPanel, BorderLayout.SOUTH);
+
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    isHovered = true;
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    isHovered = false;
+                    isPressed = false;
+                    repaint();
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    isPressed = true;
+                    repaint();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    isPressed = false;
+                    repaint();
+                    onMixClicked();
+                }
+            });
+
+            animationTimer = new Timer(16, e -> {
+                float target = isHovered ? 1f : 0f;
+                if (Math.abs(animationProgress - target) > 0.01f) {
+                    animationProgress += (target - animationProgress) * ANIMATION_SPEED;
+                    repaint();
+                }
+            });
+            animationTimer.start();
+
+        }
+
+        private void onMixClicked() {
+            SpotifyCloneUI ui = (SpotifyCloneUI) SwingUtilities.getWindowAncestor(this);
+            ui.updateNowPlayingBar(mixName, artistName, mixLayout.getImages()[0], audioPath);
+        }
+    }
+
     public SpotifyCloneUI() {
+
         setTitle("Spotify - Clone");
         setSize(1200, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -551,7 +527,7 @@ public class SpotifyCloneUI extends JFrame {
         // Menu Bar Container
         RoundedPanel menuBarContainer = new RoundedPanel(40);
         menuBarContainer.setLayout(new BorderLayout());
-        menuBarContainer.setBackground(new Color(25, 25, 25));
+        menuBarContainer.setBackground(new Color(25, 25, 25, 180)); // el último valor es la transparencia
         menuBarContainer.setPreferredSize(new Dimension(1200, 60));
 
         // Logo Apple Music a la izquierda
@@ -641,8 +617,6 @@ public class SpotifyCloneUI extends JFrame {
         topPanel.add(titleBar, BorderLayout.NORTH);
         topPanel.add(menuBarContainer, BorderLayout.SOUTH);
 
-        // DESDE AQUÍ REEMPLAZA TODO HASTA EL FINAL DEL CONSTRUCTOR
-
         // Panel principal que contendrá las flechas y el panel de mix
         JPanel mainContentPanel = new JPanel(new BorderLayout());
         mainContentPanel.setBackground(background);
@@ -696,6 +670,9 @@ public class SpotifyCloneUI extends JFrame {
 
         add(topPanel, BorderLayout.NORTH);
         add(mixContainerPanel, BorderLayout.CENTER);
+        nowPlayingBar = new NowPlayingBar();
+        add(nowPlayingBar, BorderLayout.SOUTH);
+
     }
 
     // Método para actualizar los mix mostrados (AGREGAR ESTE MÉTODO)
@@ -705,19 +682,27 @@ public class SpotifyCloneUI extends JFrame {
         // Diferentes conjuntos de imágenes para cada Mix
         String[][] allCoverImages = {
                 // Mix 1 - Hip Hop/Rap
-                { "/resources/cover1.png", "/resources/cover2.png", "/resources/cover3.png", "/resources/cover.png" },
+                { "/resources/cover1.png", "/resources/cover2.png", "/resources/cover3.png",
+                        "/resources/cover.png" },
                 // Mix 2 - Pop/Electronic
                 { "/resources/Kris r1.png", "/resources/Kris r2.png", "/resources/Kris r3.png",
                         "/resources/Kris r4.png" },
                 // Mix 3 - Rock/Alternative
-                { "/resources/Vallenato4.png", "/resources/Vallenato1.png", "/resources/Vallenato2.png",
-                        "/resources/Vallenato3.png" },
+                { "/resources/Vallenato1.png", "/resources/Vallenato2.png", "/resources/Vallenato3.png" },
                 // Mix 4 - R&B/Soul
-                { "/resources/Salsa4.png", "/resources/Salsa1.png", "/resources/Salsa2.png", "/resources/Salsa3.png" }
+                { "/resources/salsa.png", "/resources/Salsa1.png", "/resources/Salsa2.png", "/resources/Salsa3.png" }
+
         };
 
         String[] mixNames = { "Discovery Mix", "Reggaeton Hits", "Vallenato Clásico", "Salsa Mix" };
-        String[] mixSubtitles = { "Updated Today", "Kris R", "Binomio de Oro", "Frankie Ruiz" };
+        String[] audioFiles = {
+                "resources/pirlo.wav",
+                "resources/kris r.wav",
+                "resources/sample.wav",
+                "resources/sample.wav"
+        };
+
+        String[] mixSubtitles = { "Pirlo", "Kris R", "Binomio de Oro", "Frankie Ruiz" };
 
         Color[] placeholderColors = {
                 new Color(255, 20, 147), // Rosa/magenta para Discovery
@@ -730,8 +715,8 @@ public class SpotifyCloneUI extends JFrame {
         // Mix adicionales
         String[][] additionalCoverImages = {
                 // Mix 5 - Merengue
-                { "/resources/merengue1.png", "/resources/merengue2.png", "/resources/merengue3.png",
-                        "/resources/merengue4.png" },
+                { "/resources/cover1.png", "/resources/cover2.png", "/resources/cover3.png",
+                        "/resources/cover.png" },
                 // Mix 6 - Bachata
                 { "/resources/bachata1.png", "/resources/bachata2.png", "/resources/bachata3.png",
                         "/resources/bachata4.png" },
@@ -743,8 +728,17 @@ public class SpotifyCloneUI extends JFrame {
                         "/resources/tropical4.png" }
         };
 
-        String[] additionalMixNames = { "Merengue Clásico", "Bachata Romántica", "Cumbia Colombiana", "Tropical Mix" };
-        String[] additionalMixSubtitles = { "Juan Luis Guerra", "Romeo Santos", "Los Ángeles Azules", "Marc Anthony" };
+        String[] additionalMixNames = { "Merengue Clásico", "Bachata Romántica", "Cumbia Colombiana",
+                "Tropical Mix" };
+        String[] additionalAudioFiles = {
+                "resources/merengue.wav",
+                "resources/bachata.wav",
+                "resources/cumbia.wav",
+                "resources/tropical.wav"
+        };
+
+        String[] additionalMixSubtitles = { "Juan Luis Guerra", "Romeo Santos", "Los Ángeles Azules",
+                "Marc Anthony" };
 
         Color[] additionalPlaceholderColors = {
                 new Color(50, 205, 50), // Verde para Merengue
@@ -759,21 +753,39 @@ public class SpotifyCloneUI extends JFrame {
         String[] currentMixSubtitles;
         Color[] currentPlaceholderColors;
         String[] currentPlaceholderSymbols;
+        String[] currentAudioFiles;
+
+        // Nombres de canciones por mix
+String[][] mixTracks = {
+    { "Intro Pirlo", "Verso 1", "Coros" },
+    { "Dembow Explosivo", "Verano Sin Ti", "Fuego Remix" },
+    { "La Ventana Marroncita", "Olvido y Dolor", "Solo Para Ti" },
+    { "Mi Libertad", "Desnúdate Mujer", "Tú Con Él" }
+};
+
+// Archivos de audio de cada canción por mix
+String[][] trackPaths = {
+    { "resources/pirlo1.wav", "resources/pirlo2.wav", "resources/pirlo3.wav" },
+    { "resources/reggaeton1.wav", "resources/reggaeton2.wav", "resources/reggaeton3.wav" },
+    { "resources/vallenato1.wav", "resources/vallenato2.wav", "resources/vallenato3.wav" },
+    { "resources/salsa1.wav", "resources/salsa2.wav", "resources/salsa3.wav" }
+};
+
 
         if (currentMixSet == 0) {
-            // Primer conjunto (mix originales)
             currentCoverImages = allCoverImages;
             currentMixNames = mixNames;
             currentMixSubtitles = mixSubtitles;
             currentPlaceholderColors = placeholderColors;
             currentPlaceholderSymbols = placeholderSymbols;
+            currentAudioFiles = audioFiles; // <-- esta línea es nueva
         } else {
-            // Segundo conjunto (mix adicionales)
             currentCoverImages = additionalCoverImages;
             currentMixNames = additionalMixNames;
             currentMixSubtitles = additionalMixSubtitles;
             currentPlaceholderColors = additionalPlaceholderColors;
             currentPlaceholderSymbols = additionalPlaceholderSymbols;
+            currentAudioFiles = additionalAudioFiles; // <-- esta línea es nueva
         }
 
         // Crear los MixButtons
@@ -783,7 +795,8 @@ public class SpotifyCloneUI extends JFrame {
                     currentMixSubtitles[i],
                     currentCoverImages[i],
                     currentPlaceholderColors[i],
-                    currentPlaceholderSymbols[i]);
+                    currentPlaceholderSymbols[i],
+                    currentAudioFiles[i]);
             centerPanel.add(mixButton);
         }
 
@@ -792,13 +805,267 @@ public class SpotifyCloneUI extends JFrame {
     }
 
     public static void mostrarInterfaz() {
+
         SwingUtilities.invokeLater(() -> {
             SpotifyCloneUI ui = new SpotifyCloneUI();
             ui.setVisible(true);
+
         });
     }
 
     public static void main(String[] args) {
         mostrarInterfaz();
     }
+
+    // <-- pega este método justo antes de esta llave final
+
+    class NowPlayingBar extends JPanel {
+        private JSlider volumeSlider;
+
+        private Clip clip;
+        private boolean isPlaying = false;
+
+        private JLabel mixLabel;
+        private JLabel imageLabel;
+        private JButton playPauseBtn;
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            GradientPaint gp = new GradientPaint(
+                    0, 0, new Color(30, 30, 30, 180),
+                    0, getHeight(), new Color(20, 20, 20, 130));
+            g2.setPaint(gp);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            g2.dispose();
+
+            super.paintComponent(g);
+        }
+
+        private void togglePlayPause() {
+
+            if (clip == null)
+                return;
+
+            if (isPlaying) {
+                clip.stop();
+                playPauseBtn.setText("▶");
+            } else {
+                clip.start();
+                clip.loop(Clip.LOOP_CONTINUOUSLY); // Puedes quitar esto si quieres que suene una sola vez
+                playPauseBtn.setText("⏸");
+            }
+
+            isPlaying = !isPlaying;
+        }
+
+        public void loadAudio(String path) {
+            stopAudio(); // Detiene el audio anterior si está reproduciéndose
+
+            try {
+                File audioFile = new File(path);
+                if (!audioFile.exists()) {
+                    System.err.println("Archivo no encontrado: " + path);
+                    System.out.println("Existe archivo? " + audioFile.exists());
+
+                    return;
+                }
+
+                AudioInputStream audioIn = AudioSystem.getAudioInputStream(audioFile);
+                clip = AudioSystem.getClip();
+                clip.open(audioIn);
+            } catch (Exception e) {
+                System.err.println("Error al cargar audio: " + e.getMessage());
+            }
+        }
+
+        public void stopAudio() {
+            if (clip != null && clip.isRunning()) {
+                clip.stop();
+                clip.close();
+            }
+            isPlaying = false;
+            playPauseBtn.setText("▶");
+        }
+
+        public NowPlayingBar() {
+            setLayout(new BorderLayout(10, 0));
+            setBackground(new Color(30, 30, 30, 160)); // Más transparente
+            setOpaque(false); // Necesario para permitir transparencia real
+
+            setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+            setPreferredSize(new Dimension(0, 70));
+
+            imageLabel = new JLabel();
+            imageLabel.setPreferredSize(new Dimension(50, 50));
+
+            mixLabel = new JLabel("No song playing");
+            mixLabel.setForeground(Color.WHITE);
+            mixLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+
+            playPauseBtn = new JButton("▶");
+
+            playPauseBtn.addActionListener(e -> togglePlayPause());
+
+            playPauseBtn.setFocusPainted(false);
+            playPauseBtn.setBackground(new Color(60, 60, 60));
+            playPauseBtn.setForeground(Color.WHITE);
+            playPauseBtn.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
+            volumeSlider = new JSlider(0, 100, 80); // rango 0 a 100, valor inicial 80%
+
+            volumeSlider.setUI(new javax.swing.plaf.basic.BasicSliderUI(volumeSlider) {
+                @Override
+                public void paintThumb(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(new Color(0, 200, 0)); // Verde Spotify
+                    g2.fillOval(thumbRect.x, thumbRect.y, thumbRect.width, thumbRect.height);
+                    g2.dispose();
+                }
+
+                @Override
+                public void paintTrack(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    // Fondo de la pista
+                    g2.setColor(new Color(80, 80, 80)); // Gris oscuro
+                    g2.fillRoundRect(trackRect.x, trackRect.y + trackRect.height / 2 - 2, trackRect.width, 4, 4, 4);
+
+                    // Parte activa (hasta la perilla)
+                    g2.setColor(new Color(0, 200, 0)); // Verde Spotify
+                    int trackLength = thumbRect.x - trackRect.x;
+                    g2.fillRoundRect(trackRect.x, trackRect.y + trackRect.height / 2 - 2, trackLength, 4, 4, 4);
+
+                    g2.dispose();
+                }
+            });
+
+            volumeSlider.setPreferredSize(new Dimension(100, 20));
+            volumeSlider.setOpaque(false);
+            volumeSlider.setToolTipText("Volumen");
+            volumeSlider.addChangeListener(e -> adjustVolume(volumeSlider.getValue()));
+
+            add(imageLabel, BorderLayout.WEST);
+            add(mixLabel, BorderLayout.CENTER);
+            add(playPauseBtn, BorderLayout.EAST);
+
+            // Panel derecho con botón y volumen
+            JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            rightPanel.setOpaque(false);
+            rightPanel.add(playPauseBtn);
+            rightPanel.add(volumeSlider);
+
+            // Iconos y volumen más visual
+            JLabel volumeIconLow = new JLabel("🔈");
+            JLabel volumeIconHigh = new JLabel("🔊");
+
+            volumeIconLow.setForeground(Color.LIGHT_GRAY);
+            volumeIconHigh.setForeground(Color.LIGHT_GRAY);
+
+            rightPanel.add(volumeIconLow);
+            rightPanel.add(volumeSlider);
+            rightPanel.add(volumeIconHigh);
+
+            add(rightPanel, BorderLayout.EAST);
+
+        }
+
+        public void updateNowPlaying(String title, String artist, String imagePath) {
+            mixLabel.setText("<html><b>" + title + "</b><br><span style='color:gray'>" + artist + "</span></html>");
+
+            ImageIcon icon = new ImageIcon(getClass().getResource(imagePath));
+            Image img = icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(img));
+
+            // 🔁 Detener audio actual y cargar nuevo (usa tu propio archivo .wav si lo
+            // tienes)
+            stopAudio();
+            loadAudio("resources/sample.wav");
+            // loadAudio("resources/pirlo.wav");
+
+        }
+
+        private void adjustVolume(int volume) {
+            if (clip != null && clip.isOpen()) {
+                try {
+                    FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                    float min = gainControl.getMinimum(); // -80 dB
+                    float max = gainControl.getMaximum(); // 6 dB
+                    float range = max - min;
+                    float dB = min + (range * (volume / 100f));
+                    gainControl.setValue(dB);
+                } catch (IllegalArgumentException ex) {
+                    System.err.println("Este clip no soporta control de volumen.");
+                }
+            }
+        }
+
+    }
+
+    class MixDetailDialog extends JDialog {
+        public MixDetailDialog(JFrame parent, String mixName, String artist, String imagePath) {
+            super(parent, "Detalles del Mix", true);
+            setSize(400, 500);
+            setLocationRelativeTo(parent);
+            setLayout(new BorderLayout());
+            getContentPane().setBackground(new Color(30, 30, 30));
+
+            // Imagen del mix
+            JLabel coverLabel = new JLabel();
+            coverLabel.setHorizontalAlignment(JLabel.CENTER);
+            ImageIcon icon = new ImageIcon(getClass().getResource(imagePath));
+            Image img = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            coverLabel.setIcon(new ImageIcon(img));
+            coverLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
+
+            // Título y artista
+            JLabel title = new JLabel("<html><center><font color='white' size='5'>" + mixName
+                    + "</font><br><font color='gray'>" + artist + "</font></center></html>", SwingConstants.CENTER);
+
+            // Descripción y lista de canciones ficticias
+            JTextArea desc = new JTextArea(
+                    "Descripción:\nEste mix contiene una selección exclusiva de tus canciones favoritas de "
+                            + artist
+                            + ".\n\nLista de canciones:\n- Canción 1\n- Canción 2\n- Canción 3\n- Canción 4\n- Canción 5");
+            desc.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            desc.setEditable(false);
+            desc.setWrapStyleWord(true);
+            desc.setLineWrap(true);
+            desc.setOpaque(false);
+            desc.setForeground(Color.LIGHT_GRAY);
+            desc.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+            // Botón para simular "añadir"
+            JButton addButton = new JButton("➕ Añadir a tu biblioteca");
+            addButton.setFocusPainted(false);
+            addButton.setBackground(new Color(80, 80, 80));
+            addButton.setForeground(Color.WHITE);
+            addButton.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+            addButton.addActionListener(e -> {
+                JOptionPane.showMessageDialog(this, "Añadido a tu biblioteca ✔", "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+            });
+
+            add(coverLabel, BorderLayout.NORTH);
+            add(title, BorderLayout.CENTER);
+            add(desc, BorderLayout.SOUTH);
+
+            JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            bottomPanel.setOpaque(false);
+            bottomPanel.add(addButton);
+
+            add(bottomPanel, BorderLayout.PAGE_END);
+        }
+    }
+
+    public void updateNowPlayingBar(String mix, String artist, String imagePath, String audioPath) {
+        nowPlayingBar.updateNowPlaying(mix, artist, imagePath);
+        nowPlayingBar.loadAudio(audioPath);
+        nowPlayingBar.togglePlayPause();
+    }
+
 }
