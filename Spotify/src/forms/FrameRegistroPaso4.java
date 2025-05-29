@@ -8,10 +8,10 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class FrameRegistroPaso3 extends JFrame {
+public class FrameRegistroPaso4 extends JFrame {
     private Point initialClick;
 
-    public FrameRegistroPaso3() {
+    public FrameRegistroPaso4() {
         setUndecorated(true);
         setSize(500, 700);
         setMinimumSize(new Dimension(500, 700));
@@ -86,10 +86,10 @@ public class FrameRegistroPaso3 extends JFrame {
         backBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         backBtn.addActionListener(e -> {
             dispose();
-            new FrameRegistroPaso2();
+            new SpotifyPremiumPlansUI();
         });
 
-        JLabel paso = new JLabel("Paso 3 de 3");
+        JLabel paso = new JLabel("Paso 4 de 4");
         paso.setFont(new Font("Arial", Font.PLAIN, 14));
         paso.setForeground(Color.LIGHT_GRAY);
         paso.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -202,5 +202,9 @@ public class FrameRegistroPaso3 extends JFrame {
                 g2.fillOval(0, 0, getWidth(), getHeight());
             }
         };
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new FrameRegistroPaso4());
     }
 }

@@ -1,3 +1,5 @@
+package entities;
+
 public class MethodPayment {
     private Integer idMethodPayment;
     private String type;

@@ -1,3 +1,4 @@
+package entities;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -148,33 +149,11 @@ public class SongDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-            // Crear artista
-            Artist artist = new Artist(
-                rs.getInt("id_artista"),
-                rs.getString("nombre_artista"), rs.getString("Descripcion")
-            );
-
-            // Crear género
-            Gender gender = new Gender(
-                rs.getInt("id_genero"),
-                rs.getString("nombre_genero"), rs.getString("Descripcion")
-            );
-
-            // Crear canción
-            song = new Song(
-                rs.getInt("id_cancion"),
-                rs.getString("titulo"),
-                rs.getString("descripcion"),
-                rs.getDouble("duracion"),
-                artist,
-                gender,
-                rs.getBytes("portada")
-            );
+                song = new Song();
+            }
+        } catch (Exception e) {
+            System.out.println("No se pudo obtener la canción: " + e.getMessage());
         }
-
-    } catch (Exception e) {
-        System.out.println("No se pudo obtener la canción: " + e.getMessage());
-    }
         return song;
     }
 }

@@ -1,3 +1,5 @@
+package entities;
+
 public class User {
     private Integer id;
     private String name;
@@ -77,7 +79,7 @@ public class User {
     }
 
     public Integer getSubscriptionId(){
-        return subscription.getId();
+        return subscription.getIdSuscripcion();
     }
 
     public void setSubscription(Subscription subscription) {

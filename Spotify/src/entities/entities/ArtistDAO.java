@@ -1,3 +1,4 @@
+package entities;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,20 +11,23 @@ public class ArtistDAO {
     // ! CRUD
 
     //metodo para crear un artista
-    public boolean addArtist(Artist artist){
-        String sql = "INSERT INTO artist (nombre_artista, descripcion_artista) VALUES (?,?,?)";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, artist.getName());
-            pstmt.setString(2, artist.getDescription());
-            pstmt.executeUpdate();
-            return true;
-        } catch (Exception e) {
-            System.out.println("No se pudo agregar el artista" + e.getMessage());
-            return false;
-        }
+   public boolean insertArtist(Artist artist) {
+    String sql = "INSERT INTO artistas (nombre, descripcion) VALUES (?, ?)";
+
+    try (Connection conn = Conexion.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, artist.getName());
+        stmt.setString(2, artist.getDescription());
+
+        return stmt.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
+}
+
 
     //metodo para obtener todos los artistas
     public List<Artist> getAllArtists(){
