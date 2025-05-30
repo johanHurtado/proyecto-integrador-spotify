@@ -1,89 +1,129 @@
 package forms;
 
-import DAO.*;
-import entities.entities.*;
+// ─── Ajusta a tus paquetes reales ──────────────────────────────────
+import DAO.ArtistDAO;
+import DAO.GenderDAO;      // o GenreDAO
+import DAO.SongDAO;
+
+import entities.*;
+
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Swing frame that lets the user create, update and delete songs
- * (with MP3 stored as a BLOB).
+ * Ventana CRUD para canciones (MP3 + portada).
  */
 public class SongCRUDFrame extends JFrame {
 
+    // ─── Componentes ───────────────────────────────────────────────
     private JTextField  txtTitle, txtDuration;
     private JTextArea   txtDescription;
-    private JLabel      lblMp3Chosen;
-    private JTable      table;
-    private byte[]      mp3Bytes;          // temporary buffer
-    private final SongDAO dao = new SongDAO();
+    private JComboBox<Artist> cbArtist;
+    private JComboBox<Gender> cbGenre;
+    private JLabel lblMp3Chosen, lblCoverChosen;
+    private JTable table;
+
+    // ─── Buffers temporales ────────────────────────────────────────
+    private byte[] mp3Bytes;
+    private byte[] coverBytes;
+
+    // ─── DAO ───────────────────────────────────────────────────────
+    private final SongDAO   songDao   = new SongDAO();
+    private final ArtistDAO artistDao = new ArtistDAO();
+    private final GenderDAO genreDao  = new GenderDAO();
+
+    // ─── Mapas para mostrar nombres / obtener ids ──────────────────
+    private final Map<Integer,String> artistMap = new HashMap<>();
+    private final Map<Integer,String> genreMap  = new HashMap<>();
+
+    // Recuerda la última carpeta que abrió JFileChooser
+    private File lastDir = new File(System.getProperty("user.home"));
 
     public SongCRUDFrame() {
-        setTitle("Song Management");
-        setSize(800, 600);
+        setTitle("Gestión de Canciones");
+        setSize(950, 620);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         initUI();
         loadTable();
     }
 
+    /* ------------------------------------------------------------------
+       Construcción de la interfaz
+     -----------------------------------------------------------------*/
     private void initUI() {
+
+        // ── Listas desde la base de datos ──────────────────────────
+        List<Artist> artistas = artistDao.getAllArtists();
+        List<Gender> generos  = genreDao .getAllGenders();
+
+        artistas.forEach(a -> artistMap.put(a.getId(),        a.getName()));        // ⚠ getId/getName
+        generos .forEach(g -> genreMap .put(g.getIdGender(),  g.getNameGender()));  // ⚠ getters
+
+        cbArtist = new JComboBox<>(artistas.toArray(new Artist[0]));
+        cbGenre  = new JComboBox<>(generos .toArray(new Gender[0]));
+        cbArtist.setRenderer(nameRenderer());
+        cbGenre .setRenderer(nameRenderer());
+
+        // ── Campos de texto ───────────────────────────────────────
+        txtTitle       = new JTextField(25);
+        txtDuration    = new JTextField(10);
+        txtDescription = new JTextArea(3, 25);
+        JScrollPane scrollDesc = new JScrollPane(txtDescription);
+
+        // ── Selección de archivos ─────────────────────────────────
+        lblMp3Chosen   = new JLabel("Sin MP3 seleccionado");
+        JButton btnMp3 = new JButton("Elegir MP3…");
+        btnMp3.addActionListener(e -> chooseFile(true));
+
+        lblCoverChosen = new JLabel("Sin portada seleccionada");
+        JButton btnImg = new JButton("Elegir portada…");
+        btnImg.addActionListener(e -> chooseFile(false));
+
+        // ── Formulario (GridBag) ──────────────────────────────────
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(4,4,4,4);
         gbc.fill   = GridBagConstraints.HORIZONTAL;
 
-        txtTitle       = new JTextField(25);
-        txtDuration    = new JTextField(10);
-        txtDescription = new JTextArea(3,25);
-        JScrollPane scrollDesc = new JScrollPane(txtDescription);
+        int y = 0;
+        addGB(form,new JLabel("Título:"),        gbc,0,y); addGB(form,txtTitle,        gbc,1,y++);
+        addGB(form,new JLabel("Duración (seg):"),gbc,0,y); addGB(form,txtDuration,     gbc,1,y++);
+        gbc.anchor=GridBagConstraints.NORTH;
+        addGB(form,new JLabel("Descripción:"),   gbc,0,y); addGB(form,scrollDesc,      gbc,1,y++);
+        gbc.anchor=GridBagConstraints.CENTER;
+        addGB(form,new JLabel("Artista:"),       gbc,0,y); addGB(form,cbArtist,        gbc,1,y++);
+        addGB(form,new JLabel("Género:"),        gbc,0,y); addGB(form,cbGenre,         gbc,1,y++);
+        addGB(form,new JLabel("Archivo MP3:"),   gbc,0,y); addGB(form,btnMp3,          gbc,1,y++);
+        addGB(form,lblMp3Chosen,                 gbc,1,y++);
+        addGB(form,new JLabel("Portada:"),       gbc,0,y); addGB(form,btnImg,          gbc,1,y++);
+        addGB(form,lblCoverChosen,               gbc,1,y++);
 
-        lblMp3Chosen = new JLabel("No file selected");
-        JButton btnChooseMp3 = new JButton("Choose MP3…");
-        btnChooseMp3.addActionListener(e -> chooseMp3());
+        // ── Botones CRUD ──────────────────────────────────────────
+        JButton btnSave   = new JButton("Guardar");
+        JButton btnUpdate = new JButton("Actualizar");
+        JButton btnDelete = new JButton("Eliminar");
+        JButton btnClear  = new JButton("Limpiar");
 
-        // Row 0
-        gbc.gridx=0; gbc.gridy=0; form.add(new JLabel("Title:"), gbc);
-        gbc.gridx=1; form.add(txtTitle, gbc);
-        // Row 1
-        gbc.gridx=0; gbc.gridy=1; form.add(new JLabel("Duration (sec):"), gbc);
-        gbc.gridx=1; form.add(txtDuration, gbc);
-        // Row 2
-        gbc.gridx=0; gbc.gridy=2; gbc.anchor = GridBagConstraints.NORTH;
-        form.add(new JLabel("Description:"), gbc);
-        gbc.gridx=1; gbc.anchor = GridBagConstraints.CENTER;
-        form.add(scrollDesc, gbc);
-        // Row 3
-        gbc.gridx=0; gbc.gridy=3; form.add(new JLabel("MP3 file:"), gbc);
-        gbc.gridx=1; form.add(btnChooseMp3, gbc);
-        // Row 4
-        gbc.gridy=4; form.add(lblMp3Chosen, gbc);
+        btnSave  .addActionListener(e -> saveSong());
+        btnUpdate.addActionListener(e -> updateSong());
+        btnDelete.addActionListener(e -> deleteSong());
+        btnClear .addActionListener(e -> clearForm());
 
-        // CRUD buttons
-        JButton btnSave     = new JButton("Save");
-        JButton btnUpdate   = new JButton("Update");
-        JButton btnDelete   = new JButton("Delete");
-        JButton btnClear    = new JButton("Clear");
+        JPanel btns = new JPanel();
+        btns.add(btnSave); btns.add(btnUpdate); btns.add(btnDelete); btns.add(btnClear);
 
-        btnSave.addActionListener   (e -> saveSong());
-        btnUpdate.addActionListener (e -> updateSong());
-        btnDelete.addActionListener (e -> deleteSong());
-        btnClear.addActionListener  (e -> clearForm());
-
-        JPanel buttons = new JPanel();
-        buttons.add(btnSave);
-        buttons.add(btnUpdate);
-        buttons.add(btnDelete);
-        buttons.add(btnClear);
-
-        // Table
+        // ── Tabla ────────────────────────────────────────────────
         table = new JTable();
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.addMouseListener(new MouseAdapter() {
@@ -93,132 +133,150 @@ public class SongCRUDFrame extends JFrame {
         });
         JScrollPane scrollTable = new JScrollPane(table);
 
-        // Layout
+        // ── Layout principal ─────────────────────────────────────
         setLayout(new BorderLayout(8,8));
-        add(form,   BorderLayout.NORTH);
+        add(form,        BorderLayout.NORTH);
         add(scrollTable, BorderLayout.CENTER);
-        add(buttons, BorderLayout.SOUTH);
+        add(btns,        BorderLayout.SOUTH);
     }
 
-    /*=================== Action methods ===================*/
+    /* ---------- Helper GridBag ---------- */
+    private void addGB(JPanel p, Component c, GridBagConstraints gbc,int x,int y){
+        gbc.gridx=x; gbc.gridy=y; p.add(c,gbc);
+    }
 
-    private void chooseMp3() {
-        JFileChooser fc = new JFileChooser();
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try {
-                mp3Bytes = Files.readAllBytes(fc.getSelectedFile().toPath());
-                lblMp3Chosen.setText(fc.getSelectedFile().getName());
-            } catch (IOException ex) {
-                showError("I/O error: " + ex.getMessage());
+    /* ---------- Renderer que muestra solo el nombre ---------- */
+    private <T> DefaultListCellRenderer nameRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+                if (value instanceof Artist a) setText(a.getName());
+                if (value instanceof Gender g) setText(g.getNameGender()); // ⚠ getter
+                return this;
             }
+        };
+    }
+
+    /* =================== Selección de archivos =================== */
+    private void chooseFile(boolean mp3) {
+        JFileChooser fc = new JFileChooser(lastDir);               // abre en la última carpeta
+        if (mp3) fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("MP3", "mp3"));
+        else     fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Imágenes", "png","jpg","jpeg"));
+
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File f = fc.getSelectedFile();
+            lastDir = f.getParentFile();                           // guarda la carpeta
+            try {
+                byte[] bytes = Files.readAllBytes(f.toPath());
+                if (mp3) { mp3Bytes   = bytes; lblMp3Chosen  .setText(f.getName()); }
+                else     { coverBytes = bytes; lblCoverChosen.setText(f.getName()); }
+            } catch (IOException ex) { showError("Error al leer archivo: " + ex.getMessage()); }
         }
     }
 
-    private void saveSong() {
-        try {
-            dao.insert(readForm(-1));
-            loadTable();
-            clearForm();
-        } catch (SQLException ex) {
-            showError(ex.getMessage());
-        }
-    }
+    /* =================== CRUD =================== */
+    private void saveSong()   { try { songDao.insert(readForm(-1)); loadTable(); clearForm(); }
+                               catch (Exception ex) { showError(ex.getMessage()); } }
 
     private void updateSong() {
         int row = table.getSelectedRow();
-        if (row == -1) {
-            showError("Select a row first.");
-            return;
-        }
+        if (row == -1) { showError("Selecciona una fila."); return; }
         int id = (int) table.getValueAt(row, 0);
-        try {
-            dao.update(readForm(id));
-            loadTable();
-            clearForm();
-        } catch (SQLException ex) {
-            showError(ex.getMessage());
-        }
+        try { songDao.update(readForm(id)); loadTable(); clearForm(); }
+        catch (Exception ex) { showError(ex.getMessage()); }
     }
 
     private void deleteSong() {
         int row = table.getSelectedRow();
-        if (row == -1) {
-            showError("Select a row first.");
-            return;
-        }
+        if (row == -1) { showError("Selecciona una fila."); return; }
         int id = (int) table.getValueAt(row, 0);
-        int op = JOptionPane.showConfirmDialog(this,
-                "Delete selected song?", "Confirm",
-                JOptionPane.YES_NO_OPTION);
-        if (op == JOptionPane.YES_OPTION) {
-            try {
-                dao.delete(id);
-                loadTable();
-                clearForm();
-            } catch (SQLException ex) {
-                showError(ex.getMessage());
-            }
+        if (JOptionPane.showConfirmDialog(this,"¿Eliminar la canción?", "Confirmar",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            try { songDao.delete(id); loadTable(); clearForm(); }
+            catch (Exception ex) { showError(ex.getMessage()); }
         }
     }
 
+    /* ---------- Convierte formulario a Song ---------- */
     private Song readForm(int id) {
         Song s = new Song();
         s.setId(id);
         s.setTitle(txtTitle.getText().trim());
         s.setDescription(txtDescription.getText().trim());
         s.setDuration(Double.parseDouble(txtDuration.getText().trim()));
-        s.setArtistId(1); // ⚠️ Replace with a JComboBox later
-        s.setGenreId (1); // ⚠️ Replace with a JComboBox later
-        s.setCoverArt(null);          // Add cover upload if needed
+        s.setArtistId(((Artist) cbArtist.getSelectedItem()).getId());
+        s.setGenreId (((Gender) cbGenre .getSelectedItem()).getIdGender()); // ⚠ ajusta getter
+        s.setCoverArt(coverBytes);
         s.setMp3Bytes(mp3Bytes);
         return s;
     }
 
+    /* ---------- Rellena formulario al hacer doble clic ---------- */
     private void loadSelectedRow() {
         int row = table.getSelectedRow();
         if (row == -1) return;
-        txtTitle.setText((String) table.getValueAt(row, 1));
+
+        txtTitle      .setText((String) table.getValueAt(row, 1));
         txtDescription.setText((String) table.getValueAt(row, 2));
-        txtDuration.setText(String.valueOf(table.getValueAt(row, 3)));
-        lblMp3Chosen.setText("(keeping existing MP3)");
-        mp3Bytes = null; // leave null to keep current BLOB
+        txtDuration   .setText(String.valueOf(table.getValueAt(row, 3)));
+
+        String artistName = (String) table.getValueAt(row, 4);
+        String genreName  = (String) table.getValueAt(row, 5);
+
+        // Selecciona el índice que tenga ese nombre
+        selectComboByName(cbArtist, artistName);
+        selectComboByName(cbGenre,  genreName);
+
+        lblMp3Chosen  .setText("(mantener MP3 actual)");
+        lblCoverChosen.setText("(mantener portada actual)");
+        mp3Bytes = null; coverBytes = null;
     }
 
+    private <T> void selectComboByName(JComboBox<T> combo, String name) {
+        for (int i=0;i<combo.getItemCount();i++) {
+            T obj = combo.getItemAt(i);
+            if (obj instanceof Artist a && a.getName().equals(name)) { combo.setSelectedIndex(i); break; }
+            if (obj instanceof Gender g && g.getNameGender().equals(name)) { combo.setSelectedIndex(i); break; }
+        }
+    }
+
+    /* ---------- Limpia formulario ---------- */
     private void clearForm() {
-        txtTitle.setText("");
-        txtDescription.setText("");
-        txtDuration.setText("");
-        lblMp3Chosen.setText("No file selected");
-        mp3Bytes = null;
+        txtTitle.setText(""); txtDescription.setText(""); txtDuration.setText("");
+        cbArtist.setSelectedIndex(0); cbGenre.setSelectedIndex(0);
+        lblMp3Chosen.setText("Sin MP3 seleccionado");
+        lblCoverChosen.setText("Sin portada seleccionada");
+        mp3Bytes = null; coverBytes = null;
         table.clearSelection();
     }
 
+    /* ---------- Carga la tabla ---------- */
     private void loadTable() {
         try {
-            List<Song> list = dao.findAll();
+            List<Song> list = songDao.findAll();
             DefaultTableModel m = new DefaultTableModel(
-                    new Object[]{"ID","Title","Description","Duration","Artist","Genre"}, 0);
+                new Object[]{"ID","Título","Descripción","Duración","Artista","Género"},0);
             for (Song s : list) {
                 m.addRow(new Object[]{
-                        s.getId(),
-                        s.getTitle(),
-                        s.getDescription(),
-                        s.getDuration(),
-                        s.getArtistId(),
-                        s.getGenreId()
+                    s.getId(), s.getTitle(), s.getDescription(), s.getDuration(),
+                    artistMap.getOrDefault(s.getArtistId(),"—"),
+                    genreMap .getOrDefault(s.getGenreId () ,"—")
                 });
             }
             table.setModel(m);
-        } catch (SQLException ex) {
-            showError(ex.getMessage());
-        }
+        } catch (SQLException ex) { showError(ex.getMessage()); }
     }
 
     private void showError(String msg) {
         JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    /*========================= Test launcher =========================*/
+    /* ---------- Main (prueba rápida) ---------- */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new SongCRUDFrame().setVisible(true));
     }

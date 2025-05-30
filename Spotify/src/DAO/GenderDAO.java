@@ -1,81 +1,104 @@
-package DAO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+package DAO;                       // ← ajusta a tu paquete real
+
+import Database.Conexion;          // ← tu clase de conexión
+import entities.*;            // ← tu entidad (puede ser Genre)
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import Database.Conexion;
-import entities.Gender;
-
+/**
+ * DAO para la tabla "generos".
+ */
 public class GenderDAO {
-    //! CRUD
 
-    //metodo para obtener todos los generos 
+    /* ======================  INSERTAR  ====================== */
+    public boolean insertGender(Gender g) {
+        String sql = "INSERT INTO generos (nombre_genero, descripcion_genero) VALUES (?, ?)";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, g.getNameGender());
+            ps.setString(2, g.getDescription());
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.out.println("No se pudo insertar el género: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /* ======================  LISTAR TODOS  ====================== */
     public List<Gender> getAllGenders() {
-        List<Gender> genders = new ArrayList<>();
-        String sql = "SELECT * FROM generos";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-
+        List<Gender> list = new ArrayList<>();
+        String sql = "SELECT id_genero, nombre_genero, descripcion_genero FROM generos";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Gender gender = new Gender(rs.getInt("idGenero"), rs.getString("nombreGenero"), rs.getString("descripcion"));
-                genders.add(gender);
+                Gender g = new Gender(
+                        rs.getInt   ("id_genero"),
+                        rs.getString("nombre_genero"),
+                        rs.getString("descripcion_genero"));
+                list.add(g);
             }
         } catch (Exception e) {
-            System.out.println("no se pudo obtener los generos" + e.getMessage());
+            System.out.println("No se pudieron obtener los géneros: " + e.getMessage());
         }
-        return genders;
+        return list;
     }
-    //metodo para actualizar los generos
-    public boolean updateGender(Gender gender){
-        String sql = "UPDATE genero SET nombreGenero = ?, descripcion = ? WHERE idGenero = ?";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, gender.getNameGender());
-            pstmt.setString(2, gender.getDescription());
-            pstmt.setInt(3, gender.getIdGender());
-            pstmt.executeUpdate();
-            return true;
+
+    /* ======================  BUSCAR POR ID  ====================== */
+    public Gender findById(int id) {
+        String sql = "SELECT id_genero, nombre_genero, descripcion_genero FROM generos WHERE id_genero = ?";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Gender(
+                            rs.getInt   ("id_genero"),
+                            rs.getString("nombre_genero"),
+                            rs.getString("descripcion_genero"));
+                }
+            }
         } catch (Exception e) {
-            System.out.println("no se pudo actualizar la lista de generos" + e.getMessage());
+            System.out.println("No se pudo obtener el género: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /* ======================  ACTUALIZAR  ====================== */
+    public boolean updateGender(Gender g) {
+        String sql = "UPDATE generos SET nombre_genero = ?, descripcion_genero = ? WHERE id_genero = ?";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, g.getNameGender());
+            ps.setString(2, g.getDescription());
+            ps.setInt   (3, g.getIdGender());
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.out.println("No se pudo actualizar el género: " + e.getMessage());
             return false;
         }
     }
-    //metodo para eliminar un genero
-    public boolean deletGenderbyID(int idGender){
-        String sql = "DELETE FROM genero WHERE idGenero = ?";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, idGender);
-            pstmt.executeUpdate();
-            return true;
+
+    /* ======================  ELIMINAR  ====================== */
+    public boolean deleteGenderById(int id) {
+        String sql = "DELETE FROM generos WHERE id_genero = ?";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+
         } catch (Exception e) {
-            System.out.println("No se pudo eliminar el genero" + e.getMessage());
+            System.out.println("No se pudo eliminar el género: " + e.getMessage());
             return false;
         }
     }
-    //metodo para obtener un genero por id
-    public Gender getGenderByID(int idGender){
-        Gender gender = null;
-        String sql = "SELECT * FROM genero WHERE idGenero = ?";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, idGender);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                gender = new Gender(rs.getInt("idGender"), rs.getString("nombreGenero"), rs.getString("descripcion"));
-            }
-        } catch (Exception e) {
-            System.out.println("no se pudo obtener el genero" + e.getMessage());
-        }
-        return gender;
-    }
-    
 }

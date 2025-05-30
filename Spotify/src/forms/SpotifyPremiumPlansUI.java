@@ -1,21 +1,33 @@
 package forms;
 
+import entities.*;              // Ajusta si tu paquete es distinto
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
+/**
+ * Paso 3 del registro: selección de plan (Free / Premium).
+ * Recibe el objeto User ya rellenado en pasos anteriores.
+ */
 public class SpotifyPremiumPlansUI extends JFrame {
-    private Point initialClick;
 
-    public SpotifyPremiumPlansUI() {
+    private Point initialClick;
+    private final User user;   // guarda los datos del usuario hasta el paso 4
+
+    /*------------------------------------------------------------------
+      Constructor: recibe el usuario y construye la UI
+     -----------------------------------------------------------------*/
+    public SpotifyPremiumPlansUI(User user) {
         super("Elige tu plan");
-        // ── Ventana sin bordes y redondeada ──────────────────────────────
+        this.user = user;
+
+        /* ---------- Ventana sin bordes y redondeada ---------- */
         setUndecorated(true);
         setSize(800, 900);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        getContentPane().setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 40, 40));
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
@@ -23,20 +35,17 @@ public class SpotifyPremiumPlansUI extends JFrame {
             }
         });
 
-        // ── Barra de título mac-style ────────────────────────────────────
+        /* ---------- Barra estilo macOS ---------- */
         JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         titleBar.setBackground(new Color(35, 35, 35));
         titleBar.setPreferredSize(new Dimension(800, 30));
 
-        // Botón rojo: cerrar
         JButton closeBtn = createMacCircle(new Color(240, 80, 80));
         closeBtn.addActionListener(e -> System.exit(0));
 
-        // Botón amarillo: minimizar
         JButton minBtn = createMacCircle(new Color(245, 190, 80));
         minBtn.addActionListener(e -> setState(Frame.ICONIFIED));
 
-        // Botón verde: maximizar/restaurar
         JButton maxBtn = createMacCircle(new Color(100, 210, 100));
         maxBtn.addActionListener(e -> {
             if ((getExtendedState() & Frame.MAXIMIZED_BOTH) != Frame.MAXIMIZED_BOTH) {
@@ -50,11 +59,9 @@ public class SpotifyPremiumPlansUI extends JFrame {
         titleBar.add(minBtn);
         titleBar.add(maxBtn);
 
-        // Arrastrar ventana al hacer drag sobre titleBar
+        /* Permite arrastrar la ventana */
         titleBar.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
-                initialClick = e.getPoint();
-            }
+            public void mousePressed(MouseEvent e) { initialClick = e.getPoint(); }
         });
         titleBar.addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseDragged(MouseEvent e) {
@@ -64,15 +71,14 @@ public class SpotifyPremiumPlansUI extends JFrame {
             }
         });
 
-        getContentPane().add(titleBar, BorderLayout.NORTH);
+        add(titleBar, BorderLayout.NORTH);
 
-        // ── Panel de contenido con scroll ─────────────────────────────────
+        /* ---------- Contenido con scroll ---------- */
         JPanel content = new JPanel();
         content.setBackground(new Color(18, 18, 18));
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Encabezado
         JLabel heading = new JLabel("Elige tu plan");
         heading.setFont(new Font("Segoe UI", Font.BOLD, 28));
         heading.setForeground(Color.WHITE);
@@ -80,51 +86,55 @@ public class SpotifyPremiumPlansUI extends JFrame {
         content.add(heading);
         content.add(Box.createVerticalStrut(10));
 
-        JLabel sub = new JLabel("Escucha música sin anuncios, descarga tus canciones favoritas y más.");
+        JLabel sub = new JLabel(
+                "Escucha música sin anuncios, descarga tus canciones favoritas y más.");
         sub.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         sub.setForeground(Color.LIGHT_GRAY);
         sub.setAlignmentX(Component.CENTER_ALIGNMENT);
         content.add(sub);
         content.add(Box.createVerticalStrut(30));
 
-        // Plan Free
+        /* ---------- Plan Free ---------- */
         content.add(createPlanPanel(
-            "Free", "COP 0 al mes",
-            new String[]{
-                "1 cuenta Free",
-                "Salto de canciones con límites",
-                "Cambio de canciones solo hacia adelante",
-                "Reproducción bajo demanda"
-            },
-            new Color(30, 215, 96),
-            e -> {
-                new FrameRegistroPaso4().setVisible(true);
-                dispose();
-            }
+                "Free",
+                "COP 0 al mes",
+                new String[]{
+                        "1 cuenta Free",
+                        "Salto de canciones con límites",
+                        "Cambio de canciones solo hacia adelante",
+                        "Reproducción bajo demanda"
+                },
+                new Color(30, 215, 96),
+                (ActionListener) e -> {
+                    user.setSubscriptionId(1);                 // Free
+                    new FrameRegistro4(user).setVisible(true);
+                    dispose();
+                }
         ));
         content.add(Box.createVerticalStrut(20));
 
-        // Plan Premium
+        /* ---------- Plan Premium ---------- */
         content.add(createPlanPanel(
-            "Premium", "COP 16,900 al mes",
-            new String[]{
-                "1 cuenta Premium",
-                "Música sin anuncios",
-                "Escucha en cualquier lugar, incluso sin conexión",
-                "Reproducción bajo demanda"
-            },
-            new Color(245, 155, 35),
-            e -> {
-                new FramePagoPlan().setVisible(true);
-                dispose();
-            }
+                "Premium",
+                "COP 16,900 al mes",
+                new String[]{
+                        "1 cuenta Premium",
+                        "Música sin anuncios",
+                        "Escucha en cualquier lugar, incluso sin conexión",
+                        "Reproducción bajo demanda"
+                },
+                new Color(245, 155, 35),
+                (ActionListener) e -> {
+                    user.setSubscriptionId(2);                 // Premium
+                    new FramePagoPlan().setVisible(true);
+                    dispose();
+                }
         ));
         content.add(Box.createVerticalStrut(30));
 
-        // Texto legal
         JLabel legal = new JLabel(
-            "<html><center>Se aplican términos y condiciones. La disponibilidad puede variar según el plan y la región.</center></html>"
-        );
+                "<html><center>Se aplican términos y condiciones. "
+              + "La disponibilidad puede variar según el plan y la región.</center></html>");
         legal.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         legal.setForeground(Color.LIGHT_GRAY);
         legal.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -133,12 +143,20 @@ public class SpotifyPremiumPlansUI extends JFrame {
         JScrollPane scroll = new JScrollPane(content);
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
-        getContentPane().add(scroll, BorderLayout.CENTER);
+        add(scroll, BorderLayout.CENTER);
 
         setVisible(true);
     }
 
-    private JPanel createPlanPanel(String title, String price, String[] features, Color accent, ActionListener al) {
+    /*------------------------------------------------------------------
+      Crea el panel visual para cada plan
+     -----------------------------------------------------------------*/
+    private JPanel createPlanPanel(String title,
+                                   String price,
+                                   String[] features,
+                                   Color accent,
+                                   ActionListener al) {
+
         JPanel panel = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -146,30 +164,30 @@ public class SpotifyPremiumPlansUI extends JFrame {
                                     RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-                super.paintComponent(g);
                 g2.dispose();
+                super.paintComponent(g);
             }
         };
         panel.setBackground(new Color(24, 24, 24));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(accent, 2),
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+                BorderFactory.createLineBorder(accent, 2),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         panel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lbl = new JLabel(title);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lbl.setForeground(accent);
-        lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(lbl);
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTitle.setForeground(accent);
+        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(lblTitle);
 
         panel.add(Box.createVerticalStrut(5));
-        JLabel pr = new JLabel(price);
-        pr.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        pr.setForeground(Color.WHITE);
-        pr.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(pr);
+        JLabel lblPrice = new JLabel(price);
+        lblPrice.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        lblPrice.setForeground(Color.WHITE);
+        lblPrice.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(lblPrice);
 
         panel.add(Box.createVerticalStrut(10));
         for (String feat : features) {
@@ -189,8 +207,8 @@ public class SpotifyPremiumPlansUI extends JFrame {
                                     RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-                super.paintComponent(g);
                 g2.dispose();
+                super.paintComponent(g);
             }
         };
         btn.setBackground(accent);
@@ -207,6 +225,9 @@ public class SpotifyPremiumPlansUI extends JFrame {
         return panel;
     }
 
+    /*------------------------------------------------------------------
+      Crea los “círculos” de la barra de título estilo macOS
+     -----------------------------------------------------------------*/
     private JButton createMacCircle(Color color) {
         JButton b = new JButton() {
             @Override protected void paintComponent(Graphics g) {
@@ -220,8 +241,6 @@ public class SpotifyPremiumPlansUI extends JFrame {
             }
         };
         b.setPreferredSize(new Dimension(12, 12));
-        b.setMaximumSize(new Dimension(12, 12));
-        b.setMinimumSize(new Dimension(12, 12));
         b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
@@ -229,7 +248,18 @@ public class SpotifyPremiumPlansUI extends JFrame {
         return b;
     }
 
+    /*------------------------------------------------------------------
+      Test rápido independiente
+     -----------------------------------------------------------------*/
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(SpotifyPremiumPlansUI::new);
+        SwingUtilities.invokeLater(() -> {
+            User u = new User();
+            u.setUsername("tmp");
+            u.setEmail("tmp@usantoto.edu.co");
+            u.setPhone("000");
+            u.setPassword("pwd");
+            u.setRoleId(2);          // espectador
+            new SpotifyPremiumPlansUI(u);
+        });
     }
 }

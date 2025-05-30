@@ -1,99 +1,101 @@
-package DAO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+package DAO;                       // ← pon tu paquete real
+
+import Database.Conexion;          // ← tu clase de conexión
+import entities.*;       // ← tu entidad
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import Database.Conexion;
-import entities.entities.*;
-
 public class ArtistDAO {
-    // ! CRUD
 
-    //metodo para crear un artista
-   public boolean insertArtist(Artist artist) {
-    String sql = "INSERT INTO artistas (nombre, descripcion) VALUES (?, ?)";
+    /* ------------------- INSERTAR ------------------- */
+    public boolean insertArtist(Artist a) {
+        String sql = "INSERT INTO artistas (nombre_artista, descripcion_artista) VALUES (?, ?)";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
 
-    try (Connection conn = Conexion.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ps.setString(1, a.getName());
+            ps.setString(2, a.getDescription());
+            return ps.executeUpdate() > 0;
 
-        stmt.setString(1, artist.getName());
-        stmt.setString(2, artist.getDescription());
-
-        return stmt.executeUpdate() > 0;
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return false;
-    }
-}
-
-
-    //metodo para obtener todos los artistas
-    public List<Artist> getAllArtists(){
-        List<Artist> artists = new ArrayList<>();
-        String sql = "SELECT * FROM artistas";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                Artist artist = new Artist(rs.getInt("idArtista"), rs.getString("nombreArtista"), rs.getString("descripcion"));
-                artists.add(artist);
-            }
         } catch (Exception e) {
-            System.out.println("no se pudo obtener los artistas" + e.getMessage());
-        }
-        return artists;
-    }
-
-    //metodo para actualizar un artista
-    public boolean updateArtist(Artist artist){
-        String sql = "UPDATE artist SET nombre_artista = ?, descripcion_artista = ? WHERE idArtista = ?";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, artist.getName());
-            pstmt.setString(2, artist.getDescription());
-            pstmt.setInt(3, artist.getId());
-            pstmt.executeUpdate();
-            return true;
-        } catch (Exception e) {
-            System.out.println("no se pudo actualizar el artista" + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
 
-    //metodo para eliminar un artista
-    public boolean deletArtistbyID(Artist artist){
-        String sql = "DELETE FROM artist WHERE idArtista = ?";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, artist.getId());
-            pstmt.executeUpdate();
-            return true;        } catch (Exception e) {
-            System.out.println("no se pudo eliminar el artista" + e.getMessage());
-        }
-        return false;
-    }
+    /* ------------------- LISTAR TODOS ------------------- */
+    public List<Artist> getAllArtists() {
+        List<Artist> list = new ArrayList<>();
+        String sql = "SELECT id_artista, nombre_artista, descripcion_artista FROM artistas";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
-    //metodo para obtener un artista por id
-    public Artist geArtistByID(int idArtist){
-        Artist artist = null;
-        String sql = "SELECT * FROM artistas WHERE idArtista = ?";
-        try {
-            Connection conn = Conexion.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, idArtist);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                artist = new Artist(rs.getInt("idArtist"), rs.getString("nombreArtista"), rs.getString("descripcion"));
+            while (rs.next()) {
+                Artist a = new Artist(
+                        rs.getInt   ("id_artista"),
+                        rs.getString("nombre_artista"),
+                        rs.getString("descripcion_artista"));
+                list.add(a);
             }
         } catch (Exception e) {
-            System.out.println("no se pudo obtener el artista" + e.getMessage());
+            System.out.println("No se pudieron obtener los artistas: " + e.getMessage());
         }
-        return artist;
+        return list;
+    }
+
+    /* ------------------- BUSCAR POR ID ------------------- */
+    public Artist findById(int id) {
+        String sql = "SELECT id_artista, nombre_artista, descripcion_artista FROM artistas WHERE id_artista = ?";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Artist(
+                            rs.getInt   ("id_artista"),
+                            rs.getString("nombre_artista"),
+                            rs.getString("descripcion_artista"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("No se pudo obtener el artista: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /* ------------------- ACTUALIZAR ------------------- */
+    public boolean updateArtist(Artist a) {
+        String sql = "UPDATE artistas SET nombre_artista = ?, descripcion_artista = ? WHERE id_artista = ?";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, a.getName());
+            ps.setString(2, a.getDescription());
+            ps.setInt   (3, a.getId());
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.out.println("No se pudo actualizar el artista: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /* ------------------- ELIMINAR ------------------- */
+    public boolean deleteArtistById(int id) {
+        String sql = "DELETE FROM artistas WHERE id_artista = ?";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.out.println("No se pudo eliminar el artista: " + e.getMessage());
+            return false;
+        }
     }
 }

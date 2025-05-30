@@ -1,129 +1,106 @@
-package DAO;
+package DAO;                   // ← pon tu paquete real
+
+import entities.User;          // ← pon tu paquete real
+import Database.Conexion;      // ← tu clase de conexión
 
 import java.sql.*;
-import Database.Conexion;
-import entities.User;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * DAO para la tabla 'usuarios'.
- */
+/** DAO para la tabla «usuarios». */
 public class UserDAO {
 
-    /**
-     * Busca un usuario por su correo. Devuelve null si no existe.
-     */
-    public User findByEmail(String correo) {
-        String sql = "SELECT id_usuario, nombre_usuario, correo, telefono, clave, id_rol, id_suscripcion "
-                   + "FROM usuarios WHERE correo = ?";
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    /* ------------------------------------------------ insertar ------------------------------------------------ */
+    private static final String INSERT =
+            "INSERT INTO usuarios (nombre_usuario, correo, telefono, clave, id_rol, id_suscripcion) " +
+            "VALUES (?, ?, ?, ?, ?, ?)";
+
+    /** Guarda un usuario. Devuelve true si la inserción fue exitosa. */
+    public boolean insert(User u) {
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(INSERT)) {
+
+            ps.setString(1, u.getUsername());
+            ps.setString(2, u.getEmail());
+            ps.setString(3, u.getPhone());
+            ps.setString(4, u.getPassword());      // pásalo hasheado si corresponde
+            ps.setInt   (5, u.getRoleId());
+            ps.setInt   (6, u.getSubscriptionId());
+
+            return ps.executeUpdate() == 1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /* ------------------------------------------------ listar -------------------------------------------------- */
+    private static final String SELECT_ALL =
+            "SELECT id_usuario, nombre_usuario, correo, telefono, id_rol, id_suscripcion " +
+            "FROM usuarios ORDER BY id_usuario";
+
+    public List<User> findAll() {
+        List<User> lista = new ArrayList<>();
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(SELECT_ALL);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                User u = new User();
+                u.setId            (rs.getInt   ("id_usuario"));
+                u.setUsername      (rs.getString("nombre_usuario"));
+                u.setEmail         (rs.getString("correo"));
+                u.setPhone         (rs.getString("telefono"));
+                u.setRoleId        (rs.getInt   ("id_rol"));
+                u.setSubscriptionId(rs.getInt   ("id_suscripcion"));
+                lista.add(u);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return lista;
+    }
+
+    /* ------------------------------------------------ login --------------------------------------------------- */
+    private static final String AUTH =
+            "SELECT id_usuario, nombre_usuario, correo, telefono, id_rol, id_suscripcion " +
+            "FROM usuarios WHERE correo = ? AND clave = ?";
+
+    /** Devuelve el usuario si la combinación correo/clave es correcta, o null si falla. */
+    public User authenticate(String correo, String clavePlain) {
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(AUTH)) {
 
             ps.setString(1, correo);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new User(
-                        rs.getInt("id_usuario"),
-                        rs.getString("nombre_usuario"),
-                        rs.getString("correo"),
-                        rs.getString("telefono"),
-                        rs.getString("clave"),
-                        rs.getInt("id_rol"),
-                        rs.getInt("id_suscripcion")
-                    );
-                }
+            ps.setString(2, clavePlain);      // pon aquí el hash si almacenaste hash
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                User u = new User();
+                u.setId            (rs.getInt   ("id_usuario"));
+                u.setUsername      (rs.getString("nombre_usuario"));
+                u.setEmail         (rs.getString("correo"));
+                u.setPhone         (rs.getString("telefono"));
+                u.setRoleId        (rs.getInt   ("id_rol"));
+                u.setSubscriptionId(rs.getInt   ("id_suscripcion"));
+                return u;
             }
-        } catch (SQLException e) {
-            System.err.println("Error al buscar usuario por email: " + e.getMessage());
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return null;
     }
 
-    /**
-     * Inserta un nuevo usuario. El ID se genera automáticamente y se asigna al objeto.
-     * Devuelve true si la inserción fue exitosa.
-     */
-    public boolean insert(User user) {
-        String sql = "INSERT INTO usuarios "
-                   + "(nombre_usuario, correo, telefono, clave, id_rol, id_suscripcion) "
-                   + "VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    /* ---------------------------------------------- emailExists ----------------------------------------------- */
+    /** Devuelve true si ya existe un usuario con ese correo. */
+    public boolean emailExists(String correo) {
+        String sql = "SELECT 1 FROM usuarios WHERE correo = ?";
+        try (Connection c = Conexion.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
 
-            ps.setString(1, user.getNombreUsuario());
-            ps.setString(2, user.getCorreo());
-            ps.setString(3, user.getTelefono());
-            ps.setString(4, user.getClaveHash());
-            ps.setInt(5, user.getIdRol());
-            ps.setInt(6, user.getIdSuscripcion());
-
-            int affected = ps.executeUpdate();
-            if (affected == 0) return false;
-
-            try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) {
-                    user.setIdUsuario(keys.getInt(1));
-                }
-            }
-            return true;
+            ps.setString(1, correo);
+            return ps.executeQuery().next();
 
         } catch (SQLException e) {
-            System.err.println("Error al insertar usuario: " + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Actualiza la contraseña (campo 'clave') de un usuario dado su ID.
-     */
-    public boolean updatePassword(int idUsuario, String nuevaClaveHash) {
-        String sql = "UPDATE usuarios SET clave = ? WHERE id_usuario = ?";
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, nuevaClaveHash);
-            ps.setInt(2, idUsuario);
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar contraseña: " + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Actualiza nombre y teléfono de perfil de usuario.
-     */
-    public boolean updateProfile(User user) {
-        String sql = "UPDATE usuarios SET nombre_usuario = ?, telefono = ? WHERE id_usuario = ?";
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, user.getNombreUsuario());
-            ps.setString(2, user.getTelefono());
-            ps.setInt(3, user.getIdUsuario());
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar perfil: " + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Cambia la suscripción del usuario.
-     */
-    public boolean updateSubscription(int idUsuario, int idSuscripcion) {
-        String sql = "UPDATE usuarios SET id_suscripcion = ? WHERE id_usuario = ?";
-        try (Connection conn = Conexion.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, idSuscripcion);
-            ps.setInt(2, idUsuario);
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar suscripción: " + e.getMessage());
-            return false;
+            e.printStackTrace();
+            return true;                      // «true» para impedir registro ante error
         }
     }
 }
